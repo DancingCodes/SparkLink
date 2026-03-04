@@ -26,7 +26,6 @@ func SetupRouter() *gin.Engine {
 	}
 
 	room := r.Group("/room")
-	room.Use(middleware.JWTAuth())
 	{
 		room.POST("/create", controller.HandleCreateRoom)     // 创建
 		room.GET("/list", controller.HandleGetRoomList)       // 列表（大厅）

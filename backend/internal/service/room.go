@@ -10,22 +10,25 @@ import (
 
 // CreateRoom 创建房间（使用事务）
 func CreateRoom(room *model.Room) error {
+	// 开启数据库事务
 	return db.DB.Transaction(func(tx *gorm.DB) error {
-		// 1. 创建房间主表记录
+		// 1. 先创建房间，拿到生成的房间 ID
 		if err := tx.Create(room).Error; err != nil {
 			return err
 		}
 
-		// 2. 自动将房主加入房间成员表，角色设为 1 (房主)
+		// 2. 将创建者（房主）插入到 room_users 关联表
 		roomUser := model.RoomUser{
-			RoomID: room.ID,
-			UserID: room.OwnerID,
-			Role:   1, // 房主
+			RoomID: room.ID,      // 这里拿到的就是刚生成的房间主键
+			UserID: room.OwnerID, // 创建者 ID
+			Role:   1,            // 设置为房主身份
 		}
+
 		if err := tx.Create(&roomUser).Error; err != nil {
 			return err
 		}
-		return nil
+
+		return nil // 返回 nil 提交事务
 	})
 }
 
@@ -40,19 +43,20 @@ func GetRoomList() ([]model.Room, error) {
 // DissolveRoom 解散房间
 func DissolveRoom(roomID uint, userID uint) error {
 	return db.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. 确认身份
 		var room model.Room
-		// 1. 权限校验：只有房主才能解散
 		if err := tx.Where("id = ? AND owner_id = ?", roomID, userID).First(&room).Error; err != nil {
-			return errors.New("无权解散该房间或房间不存在")
+			return errors.New("无权解散该房间")
 		}
 
-		// 2. 软删除房间记录
-		if err := tx.Delete(&room).Error; err != nil {
+		// 2. 软删除房间内的所有成员关系
+		// GORM 发现模型里有 DeletedAt 字段，会自动执行 UPDATE 语句而非 DELETE
+		if err := tx.Where("room_id = ?", roomID).Delete(&model.RoomUser{}).Error; err != nil {
 			return err
 		}
 
-		// 3. 清空该房间的所有成员记录（因为房间没了，成员自然就不在房间里了）
-		if err := tx.Where("room_id = ?", roomID).Delete(&model.RoomUser{}).Error; err != nil {
+		// 3. 软删除房间本身
+		if err := tx.Delete(&room).Error; err != nil {
 			return err
 		}
 
@@ -63,17 +67,21 @@ func DissolveRoom(roomID uint, userID uint) error {
 // JoinRoom 进入房间逻辑
 func JoinRoom(roomID uint, userID uint) error {
 	var roomUser model.RoomUser
-	// 1. 检查是否已经在房间里（防止重复插入）
+
+	// 检查是否已经在房间里（GORM 默认只查 DeletedAt IS NULL 的）
 	err := db.DB.Where("room_id = ? AND user_id = ?", roomID, userID).First(&roomUser).Error
+
 	if err == nil {
-		return nil // 已经在房间里了，直接返回成功
+		// 已经在房间里，直接返回
+		return nil
 	}
 
-	// 2. 插入新成员记录
+	// 如果之前离开过（有软删除记录），重新进来时直接创建新记录即可
+	// 或者你可以用 Unscoped().Where(...) 找到旧记录并把 DeletedAt 置空（恢复）
 	newUser := model.RoomUser{
 		RoomID: roomID,
 		UserID: userID,
-		Role:   2, // 默认普通成员
+		Role:   2,
 	}
 	return db.DB.Create(&newUser).Error
 }
