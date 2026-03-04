@@ -19,8 +19,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.ui.navigation.Screen
 import love.moonc.sparklink.ui.viewmodel.LoginViewModel
 
@@ -31,11 +31,8 @@ fun LoginScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val userPrefs = remember { UserPreferences(context) }
 
-    // ✨ 大厂标准：手动创建一个简单的 ViewModel 实例（不带注入框架时的做法）
-    // 或者如果你之后用了 Hilt，直接 val loginViewModel: LoginViewModel = viewModel() 即可
-    val loginViewModel = remember { LoginViewModel(userPrefs) }
+    val loginViewModel: LoginViewModel = viewModel()
 
     Column(
         modifier = Modifier
@@ -62,7 +59,6 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        // --- 输入框：禁用状态绑定 isLoggingIn ---
         OutlinedTextField(
             value = phone,
             onValueChange = { phone = it },
@@ -98,7 +94,6 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- 登录按钮：逻辑全部交给 ViewModel ---
         Button(
             onClick = {
                 loginViewModel.login(
@@ -106,7 +101,6 @@ fun LoginScreen(navController: NavController) {
                     pass = password,
                     onSuccess = {
                         Toast.makeText(context, "欢迎回来！", Toast.LENGTH_SHORT).show()
-                        // 登录成功后跳转到主页，并销毁登录页
                         navController.navigate(Screen.TabScreen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
@@ -120,7 +114,7 @@ fun LoginScreen(navController: NavController) {
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            // 按钮逻辑：Loading 时禁用，且格式校验通过
+            // 按钮禁用逻辑：正在登录中，或者手机号位数不对（简单校验）
             enabled = !loginViewModel.isLoggingIn && phone.length == 11 && password.isNotBlank()
         ) {
             if (loginViewModel.isLoggingIn) {
@@ -145,7 +139,9 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 40.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {

@@ -1,27 +1,36 @@
 [versions]
-agp = "9.0.1"
-coreKtx = "1.10.1"
-junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.6.1"
-activityCompose = "1.8.0"
-kotlin = "2.0.21"
-composeBom = "2024.09.00"
-#新增
-navigationCompose = "2.8.5"
-datastore = "1.1.1"
-retrofit = "2.11.0"
-okhttp = "4.12.0"
-coil = "2.6.0"
+# --- 基础构建与编译器版本 ---
+agp = "9.0.1"             # Android Gradle Plugin 版本（负责打包 APK 的工具）
+kotlin = "2.0.21"         # Kotlin 编程语言版本
+coreKtx = "1.10.1"        # Android 核心 KTX 扩展库版本
+
+# --- 测试工具版本 ---
+junit = "4.13.2"          # 单元测试 JUnit 版本
+junitVersion = "1.1.5"    # Android JUnit 扩展版本
+espressoCore = "3.5.1"    # UI 自动化测试 Espresso 版本
+
+# --- Jetpack 与 Compose 版本 ---
+lifecycleRuntimeKtx = "2.6.1" # 生命周期管理库版本
+activityCompose = "1.8.0"     # Activity 对 Compose 的支持版本
+composeBom = "2024.09.00"     # Compose 物料清单版本（决定各 UI 组件的兼容性）
+
+# --- 新增功能库版本 ---
+navigationCompose = "2.8.5"   # Compose 导航路由库版本
+datastore = "1.1.1"           # 轻量级存储 DataStore 版本
+retrofit = "2.11.0"           # 网络请求框架 Retrofit 版本
+okhttp = "4.12.0"             # 网络底层通信 OkHttp 版本
+coil = "2.6.0"                # 异步图片加载库 Coil 版本
 
 [libraries]
+# --- 核心与测试依赖引用 ---
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+
+# --- Compose 基础与 UI 组件 ---
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
@@ -30,17 +39,25 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-#新增
+
+# --- 新增功能库引用 ---
+# 导航组件
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+# 键值对本地存储
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+# 官方扩展图标库（提供更多可用图标）
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+# Retrofit 网络库及其 GSON 数据转换器
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+# OkHttp 网络底层及日志打印工具
 okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+# Coil 图片加载库
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 [plugins]
+# 声明 Android 应用程序插件的 ID 和对应的版本引用
 android-application = { id = "com.android.application", version.ref = "agp" }
+# 声明 Kotlin Compose 编译器插件的 ID 和对应的版本引用
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-

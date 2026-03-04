@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.first
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
 import love.moonc.sparklink.data.local.UserPreferences
-import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.ui.navigation.Screen
 import love.moonc.sparklink.ui.navigation.bottomNavItems
 import love.moonc.sparklink.ui.screens.*
@@ -25,21 +24,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        NetworkModule.init(this)
-        val userPrefs = UserPreferences(this)
-
         setContent {
             SparklinkTheme {
-                var token by remember { mutableStateOf<Boolean?>(null) }
+                val userPrefs = UserPreferences.getInstance()
+                var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
                 LaunchedEffect(Unit) {
-                    token = !userPrefs.Token.first().isNullOrBlank()
+                    isLoggedIn = !userPrefs.token.first().isNullOrBlank()
                 }
-
-                when (token) {
+                when (isLoggedIn) {
                     null -> SplashScreen()
-                    else -> {
-                        MainContent(isLoggedIn = token!!, userPrefs = userPrefs)
-                    }
+                    else -> MainContent(isLoggedIn = isLoggedIn!!)
                 }
             }
         }
@@ -47,15 +41,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainContent(isLoggedIn: Boolean, userPrefs: UserPreferences) {
+fun MainContent(isLoggedIn: Boolean) {
     val navController = rememberNavController()
+    val userPrefs = UserPreferences.getInstance()
 
     LaunchedEffect(Unit) {
         AppEventBus.events.collect { event ->
             if (event is AppEvent.Logout) {
                 userPrefs.clear()
                 navController.navigate(Screen.Login.route) {
-                    popUpTo(0)
+                    popUpTo(0) { inclusive = true }
                 }
             }
         }
@@ -64,6 +59,7 @@ fun MainContent(isLoggedIn: Boolean, userPrefs: UserPreferences) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // 判断是否显示底部导航栏
     val showBottomBar = currentRoute in listOf(
         Screen.TabScreen.Home.route,
         Screen.TabScreen.Messages.route,
@@ -82,7 +78,9 @@ fun MainContent(isLoggedIn: Boolean, userPrefs: UserPreferences) {
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
                                 navController.navigate(screen.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -95,6 +93,7 @@ fun MainContent(isLoggedIn: Boolean, userPrefs: UserPreferences) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
+            // 根据登录状态决定起始页面
             startDestination = if (isLoggedIn) Screen.TabScreen.Home.route else Screen.Login.route,
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -111,5 +110,10 @@ fun MainContent(isLoggedIn: Boolean, userPrefs: UserPreferences) {
 
 @Composable
 fun SplashScreen() {
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        // 这里可以加个加载动画或 Logo
+    }
 }
