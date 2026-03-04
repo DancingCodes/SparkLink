@@ -1,0 +1,5 @@
+.env
+uploads/
+.idea/
+Dockerfile
+docker-compose.yml
