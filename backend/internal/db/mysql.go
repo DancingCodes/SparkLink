@@ -24,7 +24,7 @@ func InitDB() {
 	}
 
 	// 自动迁移
-	if err := DB.AutoMigrate(&model.User{}); err != nil {
+	if err := DB.AutoMigrate(&model.User{}, &model.Room{}, &model.RoomUser{}); err != nil {
 		log.Fatalf("数据库创建失败: %v", err)
 	}
 	log.Println("数据库连接成功并已同步表结构")
