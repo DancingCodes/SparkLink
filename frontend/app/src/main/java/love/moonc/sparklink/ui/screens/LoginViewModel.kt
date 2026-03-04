@@ -11,10 +11,8 @@ import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.exception.ApiException
 import love.moonc.sparklink.data.remote.model.request.LoginRequest
 
-class LoginViewModel(
-    private val userPrefs: UserPreferences
-) : ViewModel() {
-
+class LoginViewModel : ViewModel() {
+    private val userPrefs = UserPreferences.getInstance()
     var isLoggingIn by mutableStateOf(false)
         private set
 
