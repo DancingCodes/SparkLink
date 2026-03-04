@@ -1,5 +1,6 @@
 package love.moonc.sparklink.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,19 +20,22 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.ui.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") } // ✨ 修改变量名
-    var passwordVisible by remember { mutableStateOf(false) } // ✨ 密码可见性状态
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val userPrefs = remember { UserPreferences(context) }
+
+    // ✨ 大厂标准：手动创建一个简单的 ViewModel 实例（不带注入框架时的做法）
+    // 或者如果你之后用了 Hilt，直接 val loginViewModel: LoginViewModel = viewModel() 即可
+    val loginViewModel = remember { LoginViewModel(userPrefs) }
 
     Column(
         modifier = Modifier
@@ -42,7 +46,6 @@ fun LoginScreen(navController: NavController) {
     ) {
         Spacer(modifier = Modifier.height(100.dp))
 
-        // 品牌标识
         Text(
             text = "SparkLink",
             style = MaterialTheme.typography.displaySmall.copy(
@@ -59,7 +62,7 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(60.dp))
 
-        // 1. 手机号输入框
+        // --- 输入框：禁用状态绑定 isLoggingIn ---
         OutlinedTextField(
             value = phone,
             onValueChange = { phone = it },
@@ -68,12 +71,12 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             singleLine = true,
+            enabled = !loginViewModel.isLoggingIn,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. 密码输入框 ✨ 重点修改区域
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -82,11 +85,10 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             singleLine = true,
-            // ✨ 根据状态决定显示圆点还是明文
+            enabled = !loginViewModel.isLoggingIn,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                // ✨ 切换小眼睛图标
                 val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(imageVector = image, contentDescription = null)
@@ -96,36 +98,52 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // 3. 登录按钮
+        // --- 登录按钮：逻辑全部交给 ViewModel ---
         Button(
             onClick = {
-                // ✨ 配合 localStorage 保存状态
-                scope.launch {
-                    userPrefs.saveLoginStatus(true)
-                    navController.navigate(Screen.TabScreen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                loginViewModel.login(
+                    phone = phone,
+                    pass = password,
+                    onSuccess = {
+                        Toast.makeText(context, "欢迎回来！", Toast.LENGTH_SHORT).show()
+                        // 登录成功后跳转到主页，并销毁登录页
+                        navController.navigate(Screen.TabScreen.Home.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    },
+                    onError = { msg ->
+                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
-                }
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            // 简单校验：手机号11位且密码不为空
-            enabled = phone.length == 11 && password.isNotBlank()
+            // 按钮逻辑：Loading 时禁用，且格式校验通过
+            enabled = !loginViewModel.isLoggingIn && phone.length == 11 && password.isNotBlank()
         ) {
-            Text("立即进入", style = MaterialTheme.typography.titleMedium)
+            if (loginViewModel.isLoggingIn) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("立即进入", style = MaterialTheme.typography.titleMedium)
+            }
         }
 
         TextButton(
             onClick = { navController.navigate(Screen.Register.route) },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            enabled = !loginViewModel.isLoggingIn
         ) {
             Text("新用户？点击注册", color = MaterialTheme.colorScheme.primary)
         }
+
         Spacer(modifier = Modifier.weight(1f))
 
-        // 底部协议 (保持不变)
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 40.dp),
             horizontalArrangement = Arrangement.Center,

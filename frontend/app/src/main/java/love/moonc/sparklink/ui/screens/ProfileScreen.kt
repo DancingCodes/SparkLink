@@ -34,10 +34,7 @@ fun ProfileScreen(navController: NavController) {
         Button(
             onClick = {
                 scope.launch {
-                    // 1. 修改本地状态为未登录
-                    userPrefs.saveLoginStatus(false)
-
-                    // 2. 跳转回登录页，并清空所有之前的页面栈 (防止返回键回到首页)
+                    userPrefs.clear()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

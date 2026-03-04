@@ -1,31 +1,39 @@
 package love.moonc.sparklink.data.local
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import love.moonc.sparklink.data.remote.model.User
 
-// 定义 DataStore 的扩展属性
 private val Context.dataStore by preferencesDataStore(name = "user_settings")
+private val gson = Gson()
 
 class UserPreferences(private val context: Context) {
 
     companion object {
-        // 定义存储的 Key
-        private val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        private val TOKEN_KEY = stringPreferencesKey("token")
+        private val USER_KEY = stringPreferencesKey("user_info")
     }
 
-    // 读取登录状态 (Flow 会实时监听数据变化)
-    val isLoggedIn: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[IS_LOGGED_IN] ?: false
+    val Token: Flow<String?> = context.dataStore.data.map { it[TOKEN_KEY] }
+    val UserData: Flow<User?> = context.dataStore.data.map { preferences ->
+        val json = preferences[USER_KEY]
+        if (json.isNullOrEmpty()) null else gson.fromJson(json, User::class.java)
     }
 
-    // 保存登录状态 (挂起函数，需要在协程中调用)
-    suspend fun saveLoginStatus(isLoggedIn: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[IS_LOGGED_IN] = isLoggedIn
-        }
+    suspend fun saveToken(token: String) {
+        context.dataStore.edit { it[TOKEN_KEY] = token }
+    }
+    suspend fun saveUser(user: User) {
+        val json = gson.toJson(user)
+        context.dataStore.edit { it[USER_KEY] = json }
+    }
+
+    suspend fun clear() {
+        context.dataStore.edit { it.clear() }
     }
 }
