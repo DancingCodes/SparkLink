@@ -67,9 +67,7 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	// 3. 安全处理：不返回哈希密码
 	user.Password = ""
-
 	utils.Success(c, user)
 }
 
