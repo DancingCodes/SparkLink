@@ -1,4 +1,4 @@
-package love.moonc.sparklink.ui.viewmodel
+package love.moonc.sparklink.ui.screens
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.exception.ApiException
-import love.moonc.sparklink.data.remote.model.LoginRequest
+import love.moonc.sparklink.data.remote.model.request.LoginRequest
 
 class LoginViewModel(
     private val userPrefs: UserPreferences

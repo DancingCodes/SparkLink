@@ -101,7 +101,7 @@ fun MainContent(isLoggedIn: Boolean) {
             composable(Screen.Register.route) { RegisterScreen(navController) }
             composable(Screen.TabScreen.Home.route) { HomeScreen(navController) }
             composable(Screen.TabScreen.Messages.route) { MessageScreen() }
-            composable(Screen.TabScreen.Profile.route) { ProfileScreen(navController) }
+            composable(Screen.TabScreen.Profile.route) { ProfileScreen() }
             composable(Screen.CreateRoom.route) { CreateRoomScreen(navController) }
             composable(Screen.RoomDetail.route) { RoomDetailScreen(navController) }
         }

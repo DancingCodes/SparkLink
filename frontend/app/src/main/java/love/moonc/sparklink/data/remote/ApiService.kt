@@ -1,9 +1,9 @@
 package love.moonc.sparklink.data.remote
 
-import love.moonc.sparklink.data.remote.model.LoginRequest
-import love.moonc.sparklink.data.remote.model.LoginResponse
-import love.moonc.sparklink.data.remote.model.RegisterRequest
-import love.moonc.sparklink.data.remote.model.UploadResponse
+import love.moonc.sparklink.data.remote.model.request.LoginRequest
+import love.moonc.sparklink.data.remote.model.response.LoginResponse
+import love.moonc.sparklink.data.remote.model.request.RegisterRequest
+import love.moonc.sparklink.data.remote.model.response.UploadResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.Multipart

@@ -29,8 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.exception.ApiException
-import love.moonc.sparklink.data.remote.model.RegisterRequest
-import love.moonc.sparklink.ui.viewmodel.RegisterViewModel
+import love.moonc.sparklink.data.remote.model.request.RegisterRequest
+import love.moonc.sparklink.ui.screens.RegisterViewModel
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody

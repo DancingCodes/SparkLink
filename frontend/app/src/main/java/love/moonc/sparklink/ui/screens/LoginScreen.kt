@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import love.moonc.sparklink.ui.navigation.Screen
-import love.moonc.sparklink.ui.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(navController: NavController) {

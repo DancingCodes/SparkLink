@@ -1,4 +1,4 @@
-package love.moonc.sparklink.ui.viewmodel
+package love.moonc.sparklink.ui.screens
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.exception.ApiException
-import love.moonc.sparklink.data.remote.model.RegisterRequest
+import love.moonc.sparklink.data.remote.model.request.RegisterRequest
 
 class RegisterViewModel : ViewModel() {
     var isRegistering by mutableStateOf(false)

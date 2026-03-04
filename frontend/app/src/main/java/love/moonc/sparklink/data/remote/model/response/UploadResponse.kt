@@ -1,4 +1,4 @@
-package love.moonc.sparklink.data.remote.model
+package love.moonc.sparklink.data.remote.model.response
 
 import com.google.gson.annotations.SerializedName
 

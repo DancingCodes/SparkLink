@@ -7,7 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import love.moonc.sparklink.data.remote.model.User
+import love.moonc.sparklink.data.remote.model.entity.User
 
 // 定义 DataStore 扩展属性
 private val Context.dataStore by preferencesDataStore(name = "user_settings")

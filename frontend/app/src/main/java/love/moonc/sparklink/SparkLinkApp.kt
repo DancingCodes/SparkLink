@@ -8,7 +8,7 @@ class SparkLinkApp : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        NetworkModule.init(this)
+        NetworkModule.init()
         UserPreferences.init(this)
     }
 }

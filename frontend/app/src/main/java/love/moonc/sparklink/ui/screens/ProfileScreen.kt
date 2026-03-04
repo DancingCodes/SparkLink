@@ -3,23 +3,17 @@ package love.moonc.sparklink.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import love.moonc.sparklink.data.local.UserPreferences
-import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.data.events.AppEvent
+import love.moonc.sparklink.data.events.AppEventBus
 
 @Composable
-fun ProfileScreen(navController: NavController) {
-    val context = LocalContext.current
+fun ProfileScreen() {
     val scope = rememberCoroutineScope()
-    // 初始化本地存储工具
-    val userPrefs = remember { UserPreferences(context) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -34,18 +28,18 @@ fun ProfileScreen(navController: NavController) {
         Button(
             onClick = {
                 scope.launch {
-                    userPrefs.clear()
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    // --- 修改点 2：利用 AppEventBus 触发全局退出 ---
+                    // 这样 MainActivity 会监听到事件并统一执行清理和跳转逻辑
+                    AppEventBus.emit(AppEvent.Logout)
                 }
             },
-            // 使用红色调表示危险操作或退出
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.error
             ),
-            modifier = Modifier.fillMaxWidth(0.6f).height(50.dp)
+            modifier = Modifier
+                .fillMaxWidth(0.6f)
+                .height(50.dp)
         ) {
             Text(text = "退出登录")
         }
