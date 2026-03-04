@@ -92,7 +92,7 @@ fun MainContent(startLoggedIn: Boolean) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            // ✨ 关键改动：根据本地存储的状态决定起始页
+            // 根据本地存储的状态决定起始页
             startDestination = if (startLoggedIn) Screen.TabScreen.Home.route else Screen.Login.route,
             modifier = Modifier.padding(innerPadding),
         ) {

@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.RegisterRequest
+import love.moonc.sparklink.data.model.RegisterRequest
 import love.moonc.sparklink.ui.navigation.Screen
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

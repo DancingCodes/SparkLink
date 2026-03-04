@@ -1,5 +1,7 @@
 package love.moonc.sparklink.data.remote
 
+import love.moonc.sparklink.data.model.RegisterRequest
+import love.moonc.sparklink.data.model.UploadResponse
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.Multipart
@@ -11,7 +13,7 @@ interface ApiService {
     @POST("common/upload")
     suspend fun uploadFile(
         @Part file: MultipartBody.Part
-    ): BaseResponse<UploadData>
+    ): BaseResponse<UploadResponse>
 
     @POST("user/register")
     suspend fun register(

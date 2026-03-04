@@ -13,15 +13,7 @@ class AuthInterceptor(private val userPrefs: UserPreferences) : Interceptor {
 
         val originalRequest = chain.request()
 
-        // 如果是登录或注册请求，不需要加 Token
-        if (originalRequest.url.encodedPath.contains("login") ||
-            originalRequest.url.encodedPath.contains("register") ||
-            originalRequest.url.encodedPath.contains("upload")) {
-            return chain.proceed(originalRequest)
-        }
-
         val request = originalRequest.newBuilder().apply {
-            // 只有 token 为 true (或有值) 时才注入 Header
             addHeader("Authorization", "Bearer $token")
         }.build()
 

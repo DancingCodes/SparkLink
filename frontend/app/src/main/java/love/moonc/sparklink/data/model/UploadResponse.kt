@@ -1,8 +1,8 @@
-package love.moonc.sparklink.data.remote
+package love.moonc.sparklink.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class UploadData(
+data class UploadResponse(
     val id: Int,
     @SerializedName("file_name") val fileName: String,
     @SerializedName("file_uuid") val fileUuid: String,
