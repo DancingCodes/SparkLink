@@ -244,6 +244,7 @@ private suspend fun uploadImageAction(
 
         // 调用 NetworkModule 接口
         val response = NetworkModule.Api.uploadFile(body)
-        response.data.fileUuid
+        android.util.Log.d("API_UPLOAD", "Full Response: $response")
+        response.data.fileUrl
     }
 }

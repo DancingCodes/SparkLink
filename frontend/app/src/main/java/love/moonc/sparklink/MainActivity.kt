@@ -10,7 +10,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import kotlinx.coroutines.flow.first
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
@@ -103,7 +105,21 @@ fun MainContent(isLoggedIn: Boolean) {
             composable(Screen.TabScreen.Messages.route) { MessageScreen() }
             composable(Screen.TabScreen.Profile.route) { ProfileScreen() }
             composable(Screen.CreateRoom.route) { CreateRoomScreen(navController) }
-            composable(Screen.RoomDetail.route) { RoomDetailScreen(navController) }
+
+            composable(
+                route = Screen.RoomDetail.route + "/{roomId}",
+                arguments = listOf(
+                    navArgument("roomId") {
+                        type = NavType.LongType
+                        nullable = false
+                    }
+                )
+            ) { backStackEntry ->
+                val roomId = requireNotNull(backStackEntry.arguments?.getLong("roomId")) {
+                    "房间 ID 不能为空"
+                }
+                RoomDetailScreen(navController, roomId)
+            }
         }
     }
 }
