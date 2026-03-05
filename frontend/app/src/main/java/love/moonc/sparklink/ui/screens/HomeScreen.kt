@@ -8,7 +8,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox // 必须引入
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +22,7 @@ import androidx.navigation.NavController
 import love.moonc.sparklink.data.remote.model.entity.Room
 import love.moonc.sparklink.ui.navigation.Screen
 
+@OptIn(ExperimentalMaterial3Api::class) // PullToRefresh 目前仍是实验性 API
 @Composable
 fun HomeScreen(navController: NavController) {
     val homeViewModel: HomeViewModel = viewModel()
@@ -30,7 +33,7 @@ fun HomeScreen(navController: NavController) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // 顶部标题与开房按钮
+        // --- 顶部标题与开房按钮 ---
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -67,15 +70,23 @@ fun HomeScreen(navController: NavController) {
             }
         }
 
-        // 房间列表区域
-        Box(modifier = Modifier.fillMaxSize()) {
+        // --- 房间列表区域（带下拉刷新） ---
+        // PullToRefreshBox 会自动处理刷新头的显示逻辑
+        PullToRefreshBox(
+            isRefreshing = homeViewModel.isRefreshing,
+            onRefresh = { homeViewModel.fetchRoomList() },
+            modifier = Modifier.fillMaxSize(),
+            // 可以自定义刷新球的颜色
+            contentAlignment = Alignment.TopCenter
+        ) {
             if (rooms.isEmpty() && !homeViewModel.isRefreshing) {
                 // 空状态
-                Text(
-                    text = "暂无房间，快去开启一个吧",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.outline
-                )
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "暂无房间，下拉刷新试试",
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -84,22 +95,12 @@ fun HomeScreen(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(rooms) { room ->
+                    items(rooms, key = { it.id }) { room ->
                         RoomCard(room = room) {
-                            // 点击跳转详情，带上房间 ID
                             navController.navigate("${Screen.RoomDetail.route}/${room.id}")
                         }
                     }
                 }
-            }
-
-            // 加载中遮罩/进度条
-            if (homeViewModel.isRefreshing) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .size(40.dp)
-                )
             }
         }
     }
@@ -110,25 +111,24 @@ fun RoomCard(room: Room, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // 房间封面占位图
+            // 房间封面占位
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(110.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                // 如果后期接入图片库，这里可以用 AsyncImage 加载 room.cover
-                Text(
-                    text = "SparkLink",
-                    modifier = Modifier.align(Alignment.Center),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.outline
+                Icon(
+                    imageVector = Icons.Default.Movie,
+                    contentDescription = null,
+                    modifier = Modifier.align(Alignment.Center).size(32.dp),
+                    tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
             }
 
@@ -142,10 +142,7 @@ fun RoomCard(room: Room, onClick: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // 展示房主名称（对应你 Go 模型里的 Owner.Name）
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(
                         color = MaterialTheme.colorScheme.secondaryContainer,
                         shape = RoundedCornerShape(4.dp)

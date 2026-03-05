@@ -20,6 +20,7 @@ datastore = "1.1.1"           # 轻量级存储 DataStore 版本
 retrofit = "2.11.0"           # 网络请求框架 Retrofit 版本
 okhttp = "4.12.0"             # 网络底层通信 OkHttp 版本
 coil = "2.6.0"                # 异步图片加载库 Coil 版本
+androidx-material3 = "1.3.0"  # 升级了整个 Material 3 工具箱
 
 [libraries]
 # --- 核心与测试依赖引用 ---
@@ -38,7 +39,6 @@ androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 # --- 新增功能库引用 ---
 # 导航组件
@@ -55,6 +55,8 @@ okhttp-core = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 # Coil 图片加载库
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+# 升级了整个 Material 3 工具箱
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-material3" }
 
 [plugins]
 # 声明 Android 应用程序插件的 ID 和对应的版本引用
