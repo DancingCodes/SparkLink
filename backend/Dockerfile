@@ -8,5 +8,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o backend ./cmd/server/main.go
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/backend .
-EXPOSE 10001
+EXPOSE 10004
 CMD ["./backend"]
