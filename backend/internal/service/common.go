@@ -15,6 +15,7 @@ type FileHubResponse struct {
 		FileSize  int    `json:"file_size"`
 		FileType  string `json:"file_type"`
 		CreatedAt string `json:"created_at"`
+		FileUrl   string `json:"file_url"`
 	} `json:"data"`
 }
 
