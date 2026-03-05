@@ -185,6 +185,6 @@ private suspend fun uploadImageAction(
         val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
         val response = NetworkModule.Api.uploadFile(body)
-        response.data.fileUuid
+        response.data.fileUrl
     }
 }

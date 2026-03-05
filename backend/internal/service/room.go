@@ -35,8 +35,7 @@ func CreateRoom(room *model.Room) error {
 // GetRoomList 获取房间大厅列表
 func GetRoomList() ([]model.Room, error) {
 	var rooms []model.Room
-	// Preload("Owner") 可以直接带出房主的名字和头像（前提是Room结构体里有Owner User字段）
-	err := db.DB.Order("created_at DESC").Find(&rooms).Error
+	err := db.DB.Preload("Owner").Order("created_at DESC").Find(&rooms).Error
 	return rooms, err
 }
 
