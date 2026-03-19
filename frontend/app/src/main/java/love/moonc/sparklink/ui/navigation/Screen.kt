@@ -21,6 +21,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object CreateRoom : Screen("create_room")
     object RoomDetail : Screen("room_detail")
+    object UserUpdate : Screen("user_update")
 }
 
 val bottomNavItems = listOf(

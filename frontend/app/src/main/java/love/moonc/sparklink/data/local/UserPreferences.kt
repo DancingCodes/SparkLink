@@ -1,5 +1,3 @@
-// 文件路径: love/moonc/sparklink/data/local/UserPreferences.kt
-
 package love.moonc.sparklink.data.local
 
 import android.content.Context

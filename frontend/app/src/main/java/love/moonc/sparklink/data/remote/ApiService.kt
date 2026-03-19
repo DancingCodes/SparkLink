@@ -7,6 +7,7 @@ import love.moonc.sparklink.data.remote.model.request.LeaveRoomRequest
 import love.moonc.sparklink.data.remote.model.request.LoginRequest
 import love.moonc.sparklink.data.remote.model.response.LoginResponse
 import love.moonc.sparklink.data.remote.model.request.RegisterRequest
+import love.moonc.sparklink.data.remote.model.request.UserUpdateRequest
 import love.moonc.sparklink.data.remote.model.response.RoomDetailResponse
 import love.moonc.sparklink.data.remote.model.response.UploadResponse
 import okhttp3.MultipartBody
@@ -46,7 +47,12 @@ interface ApiService {
     @POST("room/dissolve")
     suspend fun dissolveRoom(@Body request: DissolveRoomRequest): BaseResponse<String>
 
-
     @POST("room/leave")
     suspend fun leaveRoom(@Body request: LeaveRoomRequest): BaseResponse<String>
+
+    @POST("user/update")
+    suspend fun updateUser(@Body request: UserUpdateRequest): BaseResponse<String>
+
+    @POST("user/close")
+    suspend fun closeAccount(): BaseResponse<String>
 }
