@@ -2,13 +2,14 @@ package router
 
 import (
 	"backend/internal/controller"
+	"backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	//r.Use(middleware.JWTAuth())
+	r.Use(middleware.JWTAuth())
 
 	common := r.Group("/common")
 	{
