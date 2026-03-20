@@ -2,14 +2,13 @@ package router
 
 import (
 	"backend/internal/controller"
-	"backend/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-	r.Use(middleware.JWTAuth())
+	//r.Use(middleware.JWTAuth())
 
 	common := r.Group("/common")
 	{
@@ -32,8 +31,11 @@ func SetupRouter() *gin.Engine {
 		room.POST("/dissolve", controller.DissolveRoom) // 解散
 		room.POST("/enter", controller.EnterRoom)       // 进入
 		room.GET("/info/:id", controller.GetRoomInfo)   // 详情
-		room.POST("/leave", controller.QuitRoom)        // 离开
 	}
 
+	ws := r.Group("/ws")
+	{
+		ws.GET("/room", controller.RoomWS)
+	}
 	return r
 }
