@@ -202,7 +202,6 @@ fun RegisterScreen(navController: NavController) {
                     }
                 )
             },
-            // 按钮禁用逻辑：上传中、注册中、或信息未填全
             enabled = !isUploading && !regViewModel.isRegistering &&
                     phone.length == 11 && password.isNotBlank() && nickname.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp),

@@ -48,7 +48,7 @@ func Login(c *gin.Context) {
 
 	user.Password = ""
 	utils.Success(c, gin.H{
-		"token": token, // 建议在 utils 下写个 jwt 工具
+		"token": token,
 		"user":  user,
 	})
 }
@@ -60,7 +60,6 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	// 2. 调用 service 查询数据库
 	user, err := service.GetUserByID(uid.(uint))
 	if err != nil {
 		utils.Error(c, err.Error())
@@ -85,10 +84,8 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	// 2. 从 JWT 中间件获取当前用户 ID
 	uid := c.MustGet("user_id").(uint)
 
-	// 3. 构建更新数据 map (只更新传了的内容)
 	updateData := make(map[string]interface{})
 	if req.Name != "" {
 		updateData["name"] = req.Name
@@ -100,7 +97,6 @@ func UpdateProfile(c *gin.Context) {
 		updateData["avatar"] = req.Avatar
 	}
 
-	// 4. 特殊处理密码：如果传了密码，需要加密后再更新
 	if req.Password != "" {
 		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		updateData["password"] = string(hashedPassword)
@@ -119,7 +115,6 @@ func CloseAccount(c *gin.Context) {
 	uid, _ := c.Get("user_id")
 	userID := uid.(uint)
 
-	// 执行软删除
 	if err := service.SoftDeleteUser(userID); err != nil {
 		utils.Error(c, "注销账户失败")
 		return
