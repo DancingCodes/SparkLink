@@ -1,8 +1,8 @@
 package love.moonc.sparklink.data.remote.model.request
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 
 class CreateRoomRequest (
-    @SerializedName("title") val title: String,
-    @SerializedName("cover") val cover: String = ""
+    @SerialName("title") val title: String,
+    @SerialName("cover") val cover: String = ""
 )

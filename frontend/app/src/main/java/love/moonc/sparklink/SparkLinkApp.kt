@@ -9,6 +9,6 @@ class SparkLinkApp : Application() {
         super.onCreate()
 
         UserPreferences.init(this)
-        NetworkModule.init()
+        NetworkModule.init(this)
     }
 }

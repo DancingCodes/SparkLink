@@ -1,9 +1,11 @@
 package love.moonc.sparklink.data.remote.model.response
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class EnterRoomResponse(
-    @SerializedName("agora_token") val agoraToken: String,
-    @SerializedName("agora_uid") val agoraUid: Int,
-    @SerializedName("channel_name") val channelName: String
+    @SerialName("agora_token") val agoraToken: String,
+    @SerialName("agora_uid") val agoraUid: Int,
+    @SerialName("channel_name") val channelName: String
 )

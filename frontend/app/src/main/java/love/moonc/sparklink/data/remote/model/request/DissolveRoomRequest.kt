@@ -1,7 +1,9 @@
 package love.moonc.sparklink.data.remote.model.request
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DissolveRoomRequest(
-    @SerializedName("room_id") val roomId: Long
+    @SerialName("room_id") val roomId: Long
 )

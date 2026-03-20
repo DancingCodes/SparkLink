@@ -1,13 +1,15 @@
 package love.moonc.sparklink.data.remote.model.response
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class UploadResponse(
     val id: Int,
-    @SerializedName("file_name") val fileName: String,
-    @SerializedName("file_uuid") val fileUuid: String,
-    @SerializedName("file_size") val fileSize: Int,
-    @SerializedName("file_type") val fileType: String,
-    @SerializedName("created_at") val createdAt: String,
-    @SerializedName("file_url") val fileUrl: String,
+    @SerialName("file_name") val fileName: String,
+    @SerialName("file_uuid") val fileUuid: String,
+    @SerialName("file_size") val fileSize: Int,
+    @SerialName("file_type") val fileType: String,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("file_url") val fileUrl: String,
 )

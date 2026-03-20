@@ -1,18 +1,20 @@
 package love.moonc.sparklink.data.remote
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * 对应后端的 Response 结构体
  * @param T 泛型，代表 Data 字段的具体类型
  */
+@Serializable
 data class BaseResponse<T>(
-    @SerializedName("code")
+    @SerialName("code")
     val code: Int,
 
-    @SerializedName("msg")
+    @SerialName("msg")
     val msg: String,
 
-    @SerializedName("data")
+    @SerialName("data")
     val data: T
 )

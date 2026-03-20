@@ -1,9 +1,11 @@
 package love.moonc.sparklink.data.remote.model.response
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import love.moonc.sparklink.data.remote.model.entity.User
 
+@Serializable
 data class LoginResponse(
-    @SerializedName("token") val token: String,
-    @SerializedName("user") val user: User
+    @SerialName("token") val token: String,
+    @SerialName("user") val user: User
 )

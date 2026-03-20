@@ -1,10 +1,12 @@
 package love.moonc.sparklink.data.remote.model.response
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import love.moonc.sparklink.data.remote.model.entity.Room
 import love.moonc.sparklink.data.remote.model.entity.RoomMember
 
+@Serializable
 data class RoomDetailResponse(
-    @SerializedName("room") val room: Room,
-    @SerializedName("members") val members: List<RoomMember>
+    @SerialName("room") val room: Room,
+    @SerialName("members") val members: List<RoomMember>
 )

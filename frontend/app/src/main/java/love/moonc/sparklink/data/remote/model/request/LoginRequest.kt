@@ -1,11 +1,13 @@
 package love.moonc.sparklink.data.remote.model.request
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class LoginRequest(
-    @SerializedName("phone")
+    @SerialName("phone")
     val phone: String,
 
-    @SerializedName("password")
+    @SerialName("password")
     val password: String
 )

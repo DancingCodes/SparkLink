@@ -1,12 +1,14 @@
 package love.moonc.sparklink.data.remote.model.entity
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class RoomUser(
-    @SerializedName("id") val id: Long,
-    @SerializedName("room_id") val roomId: Long,
-    @SerializedName("user_id") val userId: Long,
-    @SerializedName("user") val user: User,
-    @SerializedName("role") val role: Int, // 1-房主, 2-普通成员
-    @SerializedName("entered_at") val enteredAt: String
+    @SerialName("id") val id: Long,
+    @SerialName("room_id") val roomId: Long,
+    @SerialName("user_id") val userId: Long,
+    @SerialName("user") val user: User,
+    @SerialName("role") val role: Int, // 1-房主, 2-普通成员
+    @SerialName("entered_at") val enteredAt: String
 )

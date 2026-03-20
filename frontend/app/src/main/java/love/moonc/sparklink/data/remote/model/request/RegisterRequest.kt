@@ -1,11 +1,13 @@
 package love.moonc.sparklink.data.remote.model.request
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class RegisterRequest(
-    @SerializedName("phone") val phone: String,
-    @SerializedName("password") val password: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("sex") val sex: String,
-    @SerializedName("avatar") val avatar: String
+    @SerialName("phone") val phone: String,
+    @SerialName("password") val password: String,
+    @SerialName("name") val name: String,
+    @SerialName("sex") val sex: String,
+    @SerialName("avatar") val avatar: String
 )
