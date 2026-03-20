@@ -1,7 +1,9 @@
 package love.moonc.sparklink.data.remote.model.request
 
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-class LeaveRoomRequest (
+@Serializable
+data class LeaveRoomRequest (
     @SerialName("room_id") val roomId: Long
 )

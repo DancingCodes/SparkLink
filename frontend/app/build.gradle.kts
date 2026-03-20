@@ -63,4 +63,5 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     debugImplementation(libs.chucker.debug)
     releaseImplementation(libs.chucker.release)
+    implementation(libs.shengwang.rtc.voice)
 }

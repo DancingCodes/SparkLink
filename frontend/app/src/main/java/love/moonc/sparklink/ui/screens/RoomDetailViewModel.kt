@@ -11,6 +11,7 @@ import love.moonc.sparklink.data.remote.exception.ApiException
 import love.moonc.sparklink.data.remote.model.request.DissolveRoomRequest
 import love.moonc.sparklink.data.remote.model.request.LeaveRoomRequest
 import love.moonc.sparklink.data.remote.model.response.RoomDetailResponse
+import love.moonc.sparklink.data.rtc.AgoraManager
 
 class RoomDetailViewModel : ViewModel() {
     private val userPreferences = UserPreferences.getInstance()
@@ -21,8 +22,8 @@ class RoomDetailViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
         private set
 
+    // ✅ 修正：去掉 private set，允许 Screen 在权限回调中设置错误信息
     var errorMessage by mutableStateOf<String?>(null)
-        private set
 
     var isDissolved by mutableStateOf(false)
         private set
@@ -58,12 +59,22 @@ class RoomDetailViewModel : ViewModel() {
         }
     }
 
+    // --- 声网 RTC 逻辑 ---
+
+    fun joinRtcChannel(token: String, channelName: String, uid: Int) {
+        AgoraManager.joinChannel(token, channelName, uid)
+    }
+
+    fun toggleMic(shouldSpeak: Boolean) {
+        AgoraManager.setMicEnabled(shouldSpeak)
+    }
+
     fun dissolveRoom(roomId: Long) {
         viewModelScope.launch {
             isLoading = true
             try {
-                val request = DissolveRoomRequest(roomId)
-                NetworkModule.Api.dissolveRoom(request)
+                NetworkModule.Api.dissolveRoom(DissolveRoomRequest(roomId))
+                AgoraManager.leaveChannel()
                 isDissolved = true
             } catch (_: Exception) {
                 errorMessage = "解散失败"
@@ -77,9 +88,8 @@ class RoomDetailViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading = true
             try {
-                // ✅ 这里已经修正为 LeaveRoomRequest
-                val request = LeaveRoomRequest(roomId)
-                NetworkModule.Api.leaveRoom(request)
+                NetworkModule.Api.leaveRoom(LeaveRoomRequest(roomId))
+                AgoraManager.leaveChannel()
                 isLeft = true
             } catch (_: Exception) {
                 errorMessage = "退出房间失败"
@@ -91,5 +101,10 @@ class RoomDetailViewModel : ViewModel() {
 
     fun clearError() {
         errorMessage = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        AgoraManager.leaveChannel()
     }
 }
