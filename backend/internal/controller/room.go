@@ -32,7 +32,7 @@ func CreateRoom(c *gin.Context) {
 		utils.Error(c, "创建失败")
 		return
 	}
-	utils.Success(c, nil)
+	utils.Success(c, room)
 }
 
 func GetRoomList(c *gin.Context) {
