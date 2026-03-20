@@ -22,7 +22,13 @@ import coil.compose.SubcomposeAsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoomDetailScreen(navController: NavController, roomId: Long) {
+fun RoomDetailScreen(
+    navController: NavController,
+    roomId: Long,
+    agoraToken: String,
+    agoraUid: Int,
+    channelName: String
+) {
     val viewModel: RoomDetailViewModel = viewModel()
     val detail = viewModel.roomDetail
     var showExitConfirmDialog by remember { mutableStateOf(false) }

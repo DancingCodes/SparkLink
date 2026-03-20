@@ -9,4 +9,7 @@ plugins {
     // 同样使用 apply false，确保所有子模块都能共享同一个确定的 Kotlin 版本，
     // 避免不同模块之间因为 Kotlin 版本不一致导致编译冲突。
     alias(libs.plugins.kotlin.compose) apply false
+
+    // 全局声明序列化插件
+    alias(libs.plugins.kotlin.serialization) apply false
 }

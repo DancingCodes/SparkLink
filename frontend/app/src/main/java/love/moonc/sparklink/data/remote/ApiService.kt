@@ -8,6 +8,7 @@ import love.moonc.sparklink.data.remote.model.request.LoginRequest
 import love.moonc.sparklink.data.remote.model.response.LoginResponse
 import love.moonc.sparklink.data.remote.model.request.RegisterRequest
 import love.moonc.sparklink.data.remote.model.request.UserUpdateRequest
+import love.moonc.sparklink.data.remote.model.response.EnterRoomResponse
 import love.moonc.sparklink.data.remote.model.response.RoomDetailResponse
 import love.moonc.sparklink.data.remote.model.response.UploadResponse
 import okhttp3.MultipartBody
@@ -40,6 +41,9 @@ interface ApiService {
 
     @POST("room/create")
     suspend fun createRoom(@Body request: CreateRoomRequest): BaseResponse<Room>
+
+    @POST("room/enter")
+    suspend fun enterRoom(@Body request: LeaveRoomRequest): BaseResponse<EnterRoomResponse>
 
     @GET("room/info/{id}")
     suspend fun getRoomInfo(@Path("id") roomId: Long): BaseResponse<RoomDetailResponse>

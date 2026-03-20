@@ -7,29 +7,32 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.exception.ApiException
-import love.moonc.sparklink.data.remote.model.entity.Room
 import love.moonc.sparklink.data.remote.model.request.CreateRoomRequest
+import love.moonc.sparklink.data.remote.model.request.LeaveRoomRequest
+import love.moonc.sparklink.data.remote.model.response.EnterRoomResponse
 
 class CreateRoomViewModel : ViewModel() {
     var isCreating by mutableStateOf(false)
         private set
+// 文件路径: love/moonc/sparklink/ui/screens/CreateRoomViewModel.kt
 
-    fun createRoom(
+    fun createAndEnterRoom(
         title: String,
         cover: String = "",
-        onSuccess: (Room) -> Unit,
+        onSuccess: (Long, EnterRoomResponse) -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
             isCreating = true
             try {
-                val response = NetworkModule.Api.createRoom(CreateRoomRequest(title, cover))
-                onSuccess(response.data)
-            } catch (e: ApiException) {
-                onError(e.message)
+                val createResponse = NetworkModule.Api.createRoom(CreateRoomRequest(title, cover))
+                val newRoomId = createResponse.data.id
+
+                val enterResponse = NetworkModule.Api.enterRoom(LeaveRoomRequest(newRoomId))
+
+                onSuccess(newRoomId, enterResponse.data)
             } catch (e: Exception) {
-                onError("创建失败: ${e.localizedMessage}")
+                onError(e.localizedMessage ?: "开房流程出错")
             } finally {
                 isCreating = false
             }

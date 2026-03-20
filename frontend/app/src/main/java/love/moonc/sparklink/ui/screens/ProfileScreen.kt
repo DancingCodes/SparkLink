@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
 import love.moonc.sparklink.data.local.UserPreferences
-import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.ui.navigation.UserUpdateRoute
 
 @Composable
 fun ProfileScreen(navController: NavController) { // ✅ 添加 navController 参数
@@ -87,7 +87,7 @@ fun ProfileScreen(navController: NavController) { // ✅ 添加 navController �
 
         // ✅ 新增：修改个人资料按钮
         OutlinedButton(
-            onClick = { navController.navigate(Screen.UserUpdate.route) }, // ✅ 跳转到修改页
+            onClick = { navController.navigate(UserUpdateRoute)},
             modifier = Modifier.fillMaxWidth(0.5f),
             shape = CircleShape
         ) {

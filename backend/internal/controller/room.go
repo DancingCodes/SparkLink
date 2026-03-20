@@ -4,13 +4,14 @@ import (
 	"backend/internal/model"
 	"backend/internal/service"
 	"backend/pkg/utils"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-// HandleCreateRoom POST /room/create
-func HandleCreateRoom(c *gin.Context) {
+// CreateRoom POST /room/create
+func CreateRoom(c *gin.Context) {
 	var req struct {
 		Title string `json:"title" binding:"required"`
 		Cover string `json:"cover"`
@@ -35,8 +36,8 @@ func HandleCreateRoom(c *gin.Context) {
 	utils.Success(c, room)
 }
 
-// HandleGetRoomList GET /room/list
-func HandleGetRoomList(c *gin.Context) {
+// GetRoomList GET /room/list
+func GetRoomList(c *gin.Context) {
 	rooms, err := service.GetRoomList()
 	if err != nil {
 		utils.Error(c, "获取列表失败")
@@ -45,8 +46,8 @@ func HandleGetRoomList(c *gin.Context) {
 	utils.Success(c, rooms)
 }
 
-// HandleDissolveRoom POST /room/dissolve
-func HandleDissolveRoom(c *gin.Context) {
+// DissolveRoom POST /room/dissolve
+func DissolveRoom(c *gin.Context) {
 	var req struct {
 		RoomID uint `json:"room_id" binding:"required"`
 	}
@@ -80,7 +81,18 @@ func EnterRoom(c *gin.Context) {
 		utils.Error(c, "进入房间失败")
 		return
 	}
-	utils.Success(c, "成功进入房间")
+
+	token, err := utils.GenerateVoiceToken(req.RoomID, uid)
+	if err != nil {
+		utils.Error(c, "生成语音令牌失败，请重试")
+		return
+	}
+
+	utils.Success(c, gin.H{
+		"agora_token":  token,
+		"agora_uid":    uid,
+		"channel_name": fmt.Sprintf("room_%d", req.RoomID),
+	})
 }
 
 // GetRoomInfo 接口：GET /room/info/:id

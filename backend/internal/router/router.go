@@ -27,12 +27,12 @@ func SetupRouter() *gin.Engine {
 
 	room := r.Group("/room")
 	{
-		room.POST("/create", controller.HandleCreateRoom)     // 创建
-		room.GET("/list", controller.HandleGetRoomList)       // 列表（大厅）
-		room.POST("/dissolve", controller.HandleDissolveRoom) // 解散
-		room.POST("/enter", controller.EnterRoom)             // 进入
-		room.GET("/info/:id", controller.GetRoomInfo)         // 详情
-		room.POST("/leave", controller.QuitRoom)              // 离开
+		room.POST("/create", controller.CreateRoom)     // 创建
+		room.GET("/list", controller.GetRoomList)       // 列表（大厅）
+		room.POST("/dissolve", controller.DissolveRoom) // 解散
+		room.POST("/enter", controller.EnterRoom)       // 进入
+		room.GET("/info/:id", controller.GetRoomInfo)   // 详情
+		room.POST("/leave", controller.QuitRoom)        // 离开
 	}
 
 	return r

@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.android.application)
     // 应用 Kotlin 的 Compose 编译器插件（让 Kotlin 支持 Jetpack Compose 语法）
     alias(libs.plugins.kotlin.compose)
+    // 应用序列化插件
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -105,4 +107,6 @@ dependencies {
     implementation(libs.retrofit.gson)
     // Coil：Compose 最常用的异步图片加载库（从 URL 加载图片到界面上）
     implementation(libs.coil.compose)
+    // 引入 JSON 序列化库
+    implementation(libs.kotlinx.serialization.json)
 }

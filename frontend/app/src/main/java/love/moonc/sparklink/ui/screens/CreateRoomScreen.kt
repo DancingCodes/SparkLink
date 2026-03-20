@@ -26,7 +26,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.ui.navigation.CreateRoomRoute
+import love.moonc.sparklink.ui.navigation.RoomDetailRoute
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -138,21 +139,26 @@ fun CreateRoomScreen(navController: NavController) {
 
             Button(
                 onClick = {
-                    viewModel.createRoom(
+                    viewModel.createAndEnterRoom(
                         title = roomName,
-                        cover = uploadedCoverUrl, // 提交上传后得到的 URL/UUID
-                        onSuccess = { room ->
-                            Toast.makeText(context, "开房成功！", Toast.LENGTH_SHORT).show()
-                            navController.navigate("${Screen.RoomDetail.route}/${room.id}") {
-                                popUpTo(Screen.CreateRoom.route) { inclusive = true }
+                        cover = uploadedCoverUrl,
+                        onSuccess = { roomId, enterData ->
+                            navController.navigate(
+                                RoomDetailRoute(
+                                    roomId = roomId,
+                                    agoraToken = enterData.agoraToken,
+                                    agoraUid = enterData.agoraUid,
+                                    channelName = enterData.channelName
+                                )
+                            ) {
+                                popUpTo<CreateRoomRoute> { inclusive = true }
                             }
                         },
                         onError = { msg ->
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
                     )
-                },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
+                },modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(25.dp),
                 enabled = roomName.isNotBlank() && !viewModel.isCreating && !isUploading
             ) {

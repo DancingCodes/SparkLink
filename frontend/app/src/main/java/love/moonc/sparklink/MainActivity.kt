@@ -8,24 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
 import androidx.navigation.compose.*
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.first
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
 import love.moonc.sparklink.data.local.UserPreferences
-import love.moonc.sparklink.ui.navigation.Screen
-import love.moonc.sparklink.ui.navigation.bottomNavItems
+import love.moonc.sparklink.ui.navigation.*
 import love.moonc.sparklink.ui.screens.*
 import love.moonc.sparklink.ui.theme.SparklinkTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             SparklinkTheme {
                 val userPrefs = UserPreferences.getInstance()
@@ -47,11 +45,12 @@ fun MainContent(isLoggedIn: Boolean) {
     val navController = rememberNavController()
     val userPrefs = UserPreferences.getInstance()
 
+    // 登录/登出事件监听
     LaunchedEffect(Unit) {
         AppEventBus.events.collect { event ->
             if (event is AppEvent.Logout) {
                 userPrefs.clear()
-                navController.navigate(Screen.Login.route) {
+                navController.navigate(LoginRoute) {
                     popUpTo(0) { inclusive = true }
                 }
             }
@@ -59,27 +58,28 @@ fun MainContent(isLoggedIn: Boolean) {
     }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentDestination = navBackStackEntry?.destination
 
-    // 判断是否显示底部导航栏
-    val showBottomBar = currentRoute in listOf(
-        Screen.TabScreen.Home.route,
-        Screen.TabScreen.Messages.route,
-        Screen.TabScreen.Profile.route
-    )
+    // ✅ 判断是否显示底部导航栏：判断当前目的地是否在 Tab 列表里
+    val showBottomBar = currentDestination?.let { dest ->
+        dest.hasRoute<HomeRoute>() || dest.hasRoute<MessagesRoute>() || dest.hasRoute<ProfileRoute>()
+    } ?: false
 
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
-                    val currentDestination = navBackStackEntry?.destination
-                    bottomNavItems.forEach { screen ->
+                    bottomNavItems.forEach { item ->
+                        val selected = currentDestination.hierarchy.any {
+                            it.hasRoute(item.route::class)
+                        }
+
                         NavigationBarItem(
-                            icon = { Icon(screen.icon, contentDescription = null) },
-                            label = { Text(screen.title) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            icon = { Icon(item.icon, contentDescription = null) },
+                            label = { Text(item.title) },
+                            selected = selected,
                             onClick = {
-                                navController.navigate(screen.route) {
+                                navController.navigate(item.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
@@ -95,31 +95,29 @@ fun MainContent(isLoggedIn: Boolean) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            // 根据登录状态决定起始页面
-            startDestination = if (isLoggedIn) Screen.TabScreen.Home.route else Screen.Login.route,
+            // ✅ 起始页面改为 Route 对象
+            startDestination = if (isLoggedIn) HomeRoute else LoginRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Login.route) { LoginScreen(navController) }
-            composable(Screen.Register.route) { RegisterScreen(navController) }
-            composable(Screen.TabScreen.Home.route) { HomeScreen(navController) }
-            composable(Screen.TabScreen.Messages.route) { MessageScreen() }
-            composable(Screen.TabScreen.Profile.route) { ProfileScreen(navController) }
-            composable(Screen.UserUpdate.route) { UserUpdateScreen(navController) }
-            composable(Screen.CreateRoom.route) { CreateRoomScreen(navController) }
+            // 所有路由注册全部改为类型安全模式
+            composable<LoginRoute> { LoginScreen(navController) }
+            composable<RegisterRoute> { RegisterScreen(navController) }
+            composable<HomeRoute> { HomeScreen(navController) }
+            composable<MessagesRoute> { MessageScreen() }
+            composable<ProfileRoute> { ProfileScreen(navController) }
+            composable<UserUpdateRoute> { UserUpdateScreen(navController) }
+            composable<CreateRoomRoute> { CreateRoomScreen(navController) }
 
-            composable(
-                route = Screen.RoomDetail.route + "/{roomId}",
-                arguments = listOf(
-                    navArgument("roomId") {
-                        type = NavType.LongType
-                        nullable = false
-                    }
+            // 核心：房间详情页
+            composable<RoomDetailRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<RoomDetailRoute>()
+                RoomDetailScreen(
+                    navController = navController,
+                    roomId = args.roomId,
+                    agoraToken = args.agoraToken,
+                    agoraUid = args.agoraUid,
+                    channelName = args.channelName
                 )
-            ) { backStackEntry ->
-                val roomId = requireNotNull(backStackEntry.arguments?.getLong("roomId")) {
-                    "房间 ID 不能为空"
-                }
-                RoomDetailScreen(navController, roomId)
             }
         }
     }
@@ -127,10 +125,5 @@ fun MainContent(isLoggedIn: Boolean) {
 
 @Composable
 fun SplashScreen() {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        // 这里可以加个加载动画或 Logo
-    }
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
 }

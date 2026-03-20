@@ -21,7 +21,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.ui.navigation.HomeRoute
+import love.moonc.sparklink.ui.navigation.LoginRoute
+import love.moonc.sparklink.ui.navigation.RegisterRoute
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -100,8 +102,10 @@ fun LoginScreen(navController: NavController) {
                     pass = password,
                     onSuccess = {
                         Toast.makeText(context, "欢迎回来！", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Screen.TabScreen.Home.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        navController.navigate(HomeRoute) {
+                            popUpTo<LoginRoute> {
+                                inclusive = true
+                            }
                         }
                     },
                     onError = { msg ->
@@ -128,7 +132,7 @@ fun LoginScreen(navController: NavController) {
         }
 
         TextButton(
-            onClick = { navController.navigate(Screen.Register.route) },
+            onClick = { navController.navigate(RegisterRoute) },
             modifier = Modifier.align(Alignment.CenterHorizontally),
             enabled = !loginViewModel.isLoggingIn
         ) {

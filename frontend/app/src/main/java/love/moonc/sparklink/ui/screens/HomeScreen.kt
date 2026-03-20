@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import love.moonc.sparklink.data.remote.model.entity.Room
-import love.moonc.sparklink.ui.navigation.Screen
+import love.moonc.sparklink.ui.navigation.RoomDetailRoute
+import love.moonc.sparklink.ui.navigation.CreateRoomRoute
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefresh 目前仍是实验性 API
 @Composable
@@ -50,7 +51,7 @@ fun HomeScreen(navController: NavController) {
             )
 
             Button(
-                onClick = { navController.navigate(Screen.CreateRoom.route) },
+                onClick = {navController.navigate(CreateRoomRoute)},
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                 shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -97,7 +98,20 @@ fun HomeScreen(navController: NavController) {
                 ) {
                     items(rooms, key = { it.id }) { room ->
                         RoomCard(room = room) {
-                            navController.navigate("${Screen.RoomDetail.route}/${room.id}")
+                            homeViewModel.enterRoom(
+                                roomId = room.id,
+                                onSuccess = { data ->
+                                    homeViewModel.lastEnterData = data
+                                    navController.navigate(
+                                        RoomDetailRoute(
+                                            roomId = room.id,
+                                            agoraToken = data.agoraToken,
+                                            agoraUid = data.agoraUid,
+                                            channelName = data.channelName
+                                        )
+                                    )
+                                }
+                            )
                         }
                     }
                 }
