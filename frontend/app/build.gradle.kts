@@ -48,7 +48,6 @@ android {
         }
     }
     compileOptions {
-        // 指定编译 Java 代码时使用的兼容版本（目前主流推荐 11 或 17）
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
