@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import love.moonc.sparklink.data.local.UserPreferences
+import love.moonc.sparklink.data.remote.ws.RoomSocketManager
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,6 +16,20 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 object NetworkModule {
     private const val BASE_URL = "http://10.0.2.2:10004/"
     // private const val BASE_URL = "https://sparklink.moonc.love/"
+
+    fun getWsUrl(path: String): String {
+        val wsBase = if (BASE_URL.startsWith("https")) {
+            BASE_URL.replace("https://", "wss://")
+        } else {
+            BASE_URL.replace("http://", "ws://")
+        }
+        return "${wsBase.removeSuffix("/")}/${path.removePrefix("/")}"
+    }
+
+    private val okHttpClient = OkHttpClient.Builder().build()
+    val roomSocketManager = RoomSocketManager(okHttpClient)
+
+
     lateinit var Api: ApiService
 
     private val jsonConfig = Json {
