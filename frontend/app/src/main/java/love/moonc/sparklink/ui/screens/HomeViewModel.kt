@@ -19,9 +19,6 @@ class HomeViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(false)
         private set
 
-    // 添加错误提示状态
-    var errorMessage by mutableStateOf<String?>(null)
-
     init {
         fetchRoomList()
     }
@@ -29,18 +26,12 @@ class HomeViewModel : ViewModel() {
     fun fetchRoomList() {
         viewModelScope.launch {
             isRefreshing = true
-            errorMessage = null
 
             // ✅ 使用 repository 获取房间列表
             NetworkModule.repository.getRoomList()
                 .onSuccess { list ->
                     rooms = list
                 }
-                .onFailure { e ->
-                    errorMessage = "获取列表失败: ${e.message}"
-                    Log.e("API", errorMessage!!)
-                }
-
             isRefreshing = false
         }
     }
@@ -54,10 +45,6 @@ class HomeViewModel : ViewModel() {
             NetworkModule.repository.enterRoom(roomId)
                 .onSuccess { enterData ->
                     onSuccess(enterData)
-                }
-                .onFailure { e ->
-                    errorMessage = "进入房间失败: ${e.message}"
-                    Log.e("API", errorMessage!!)
                 }
         }
     }

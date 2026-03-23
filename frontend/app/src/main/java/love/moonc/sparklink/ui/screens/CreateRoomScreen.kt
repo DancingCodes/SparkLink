@@ -33,7 +33,6 @@ fun CreateRoomScreen(navController: NavController) {
     var roomName by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // 图片选择器逻辑：选完直接丢给 ViewModel
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -62,7 +61,6 @@ fun CreateRoomScreen(navController: NavController) {
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // --- 封面上传卡片 ---
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,7 +87,6 @@ fun CreateRoomScreen(navController: NavController) {
                         }
                     }
 
-                    // 加载遮罩
                     if (viewModel.isUploading) {
                         Box(
                             modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)),
@@ -111,12 +108,6 @@ fun CreateRoomScreen(navController: NavController) {
                 enabled = !viewModel.isCreating,
                 singleLine = true
             )
-
-            // 错误提示（如果有）
-            viewModel.errorMessage?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
@@ -139,7 +130,6 @@ fun CreateRoomScreen(navController: NavController) {
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(25.dp),
-                // 确保没有正在上传或创建
                 enabled = roomName.isNotBlank() && !viewModel.isCreating && !viewModel.isUploading
             ) {
                 if (viewModel.isCreating) {

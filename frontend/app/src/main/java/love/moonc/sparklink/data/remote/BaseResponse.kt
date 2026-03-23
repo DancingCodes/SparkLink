@@ -19,12 +19,10 @@ data class BaseResponse<T>(
  */
 suspend fun <T> BaseResponse<T>.toResult(): Result<T> {
     if (this.isSuccess) {
-        // 关键：处理 data 为空但业务成功的情况（如退出房间）
         @Suppress("UNCHECKED_CAST")
         return Result.success((data ?: Unit) as T)
     }
 
-    // 统一处理报错
     AppEventBus.emit(AppEvent.ShowToast(this.msg))
     if (this.code == 401) {
         AppEventBus.emit(AppEvent.Logout)

@@ -10,14 +10,12 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import love.moonc.sparklink.data.remote.model.entity.User
 
-// 定义 DataStore 扩展属性
 private val Context.dataStore by preferencesDataStore(name = "user_settings")
 
 class UserPreferences private constructor(context: Context) {
 
     private val appContext = context.applicationContext
 
-    // 配置 Json 解析器，与 NetworkModule 保持一致，增加容错性
     private val json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
@@ -43,17 +41,14 @@ class UserPreferences private constructor(context: Context) {
         }
     }
 
-    // 获取 Token 流
     val token: Flow<String?> = appContext.dataStore.data.map { it[TOKEN_KEY] }
 
-    // 获取用户信息流：将 JSON 字符串反序列化为 User 对象
     val userData: Flow<User?> = appContext.dataStore.data.map { preferences ->
         val jsonStr = preferences[USER_KEY]
         if (jsonStr.isNullOrEmpty()) {
             null
         } else {
             try {
-                // ✅ 使用 Kotlinx Serialization 替代 gson.fromJson
                 json.decodeFromString<User>(jsonStr)
             } catch (e: Exception) {
                 e.printStackTrace()

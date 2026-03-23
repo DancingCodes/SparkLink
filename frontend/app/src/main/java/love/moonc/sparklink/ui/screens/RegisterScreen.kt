@@ -37,12 +37,7 @@ fun RegisterScreen(navController: NavController) {
     var gender by remember { mutableStateOf("男") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // ✅ 错误提示监听
-    LaunchedEffect(regViewModel.errorMessage) {
-        regViewModel.errorMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        }
-    }
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()

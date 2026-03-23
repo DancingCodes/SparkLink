@@ -24,7 +24,6 @@ class UserUpdateViewModel : ViewModel() {
     var isUploading by mutableStateOf(false) // ✅ 新增：上传状态
     var updateSuccess by mutableStateOf(false)
     var isAccountClosed by mutableStateOf(false)
-    var errorMessage by mutableStateOf<String?>(null)
 
     init {
         // 初始化：从本地缓存读取当前用户信息
@@ -43,13 +42,9 @@ class UserUpdateViewModel : ViewModel() {
     fun uploadAvatar(context: Context, uri: Uri) {
         viewModelScope.launch {
             isUploading = true
-            errorMessage = null
             NetworkModule.repository.uploadImage(context, uri, "avatar")
                 .onSuccess { url ->
                     avatar = url
-                }
-                .onFailure { e ->
-                    errorMessage = "头像上传失败: ${e.message}"
                 }
             isUploading = false
         }
@@ -61,7 +56,6 @@ class UserUpdateViewModel : ViewModel() {
     fun updateUserInfo() {
         viewModelScope.launch {
             isLoading = true
-            errorMessage = null
 
             val request = UserUpdateRequest(
                 name = name,
@@ -79,10 +73,6 @@ class UserUpdateViewModel : ViewModel() {
                     }
                     updateSuccess = true
                 }
-                .onFailure { e ->
-                    errorMessage = e.message
-                    Log.e("API", "更新失败: ${e.message}")
-                }
             isLoading = false
         }
     }
@@ -93,10 +83,8 @@ class UserUpdateViewModel : ViewModel() {
     fun closeAccount() {
         viewModelScope.launch {
             isLoading = true
-            errorMessage = null
             NetworkModule.repository.closeAccount()
                 .onSuccess { isAccountClosed = true }
-                .onFailure { errorMessage = it.message }
             isLoading = false
         }
     }

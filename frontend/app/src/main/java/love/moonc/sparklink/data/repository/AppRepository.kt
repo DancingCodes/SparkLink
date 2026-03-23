@@ -28,7 +28,6 @@ class AppRepository(private val api: ApiService) {
     suspend fun leaveRoom(roomId: Long) = api.leaveRoom(LeaveRoomRequest(roomId)).toResult()
     suspend fun dissolveRoom(roomId: Long) = api.dissolveRoom(DissolveRoomRequest(roomId)).toResult()
 
-    // 图片上传业务 (从 ApiService 移到这里)
     suspend fun uploadImage(context: Context, uri: Uri, prefix: String = "upload"): Result<String> = withContext(Dispatchers.IO) {
         try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: throw Exception("无法读取图片")
@@ -41,7 +40,6 @@ class AppRepository(private val api: ApiService) {
             val res = api.uploadFile(body).toResult()
             file.delete()
 
-            // 将 Result<UploadResponse> 映射为 Result<String>，直接返回 URL
             res.map { it.fileUrl }
         } catch (e: Exception) {
             Result.failure(e)

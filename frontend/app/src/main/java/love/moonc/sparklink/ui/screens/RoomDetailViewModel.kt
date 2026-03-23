@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.model.entity.RoomMember
+import love.moonc.sparklink.data.remote.model.entity.RoomUser
 import love.moonc.sparklink.data.remote.model.response.RoomDetailResponse
 import love.moonc.sparklink.data.rtc.AgoraManager
 
@@ -16,7 +16,7 @@ class RoomDetailViewModel : ViewModel() {
 
     // 房间数据状态
     var roomDetail by mutableStateOf<RoomDetailResponse?>(null)
-    val occupants = mutableStateListOf<RoomMember>()
+    val occupants = mutableStateListOf<RoomUser>()
 
     /**
      * 进入房间初始化：获取详情 + 开启 WebSocket

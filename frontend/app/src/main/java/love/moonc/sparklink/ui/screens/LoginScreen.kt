@@ -34,12 +34,6 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // ✅ 错误提示监听：当 ViewModel 抛出错误时，UI 弹出 Toast
-    LaunchedEffect(loginViewModel.errorMessage) {
-        loginViewModel.errorMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     Column(
         modifier = Modifier

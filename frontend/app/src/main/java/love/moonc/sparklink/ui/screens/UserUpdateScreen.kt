@@ -41,10 +41,6 @@ fun UserUpdateScreen(navController: NavController) {
         uri?.let { viewModel.uploadAvatar(context, it) }
     }
 
-    // ✅ 统一错误与成功监听
-    LaunchedEffect(viewModel.errorMessage) {
-        viewModel.errorMessage?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
-    }
 
     LaunchedEffect(viewModel.updateSuccess) {
         if (viewModel.updateSuccess) {

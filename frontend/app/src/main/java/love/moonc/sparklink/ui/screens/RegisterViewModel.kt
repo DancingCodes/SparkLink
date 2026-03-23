@@ -23,7 +23,6 @@ class RegisterViewModel : ViewModel() {
     var uploadedAvatarUrl by mutableStateOf("")
         private set
 
-    var errorMessage by mutableStateOf<String?>(null)
 
     /**
      * 🚀 新增：处理头像上传逻辑
@@ -31,14 +30,9 @@ class RegisterViewModel : ViewModel() {
     fun uploadAvatar(context: Context, uri: Uri) {
         viewModelScope.launch {
             isUploading = true
-            errorMessage = null
             NetworkModule.repository.uploadImage(context, uri, "avatar")
                 .onSuccess { url ->
                     uploadedAvatarUrl = url
-                }
-                .onFailure { e ->
-                    errorMessage = "头像上传失败: ${e.message}"
-                    Log.e("API", errorMessage!!)
                 }
             isUploading = false
         }
@@ -56,8 +50,6 @@ class RegisterViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             isRegistering = true
-            errorMessage = null
-
             val request = RegisterRequest(
                 phone = phone,
                 password = pass,
@@ -70,11 +62,6 @@ class RegisterViewModel : ViewModel() {
                 .onSuccess { _: String ->
                     onSuccess()
                 }
-                .onFailure { e ->
-                    errorMessage = e.message
-                    Log.e("API", "注册失败: ${e.message}")
-                }
-
             isRegistering = false
         }
     }

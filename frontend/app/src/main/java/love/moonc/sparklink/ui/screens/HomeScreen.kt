@@ -12,11 +12,9 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,15 +30,6 @@ import love.moonc.sparklink.ui.navigation.RoomDetailRoute
 fun HomeScreen(navController: NavController) {
     val homeViewModel: HomeViewModel = viewModel()
     val rooms = homeViewModel.rooms
-    val context = LocalContext.current
-
-    // ✅ 错误提示监听：当 errorMessage 改变时弹出 Toast
-    LaunchedEffect(homeViewModel.errorMessage) {
-        homeViewModel.errorMessage?.let {
-            // 这里可以换成 Snackbar，目前用 Toast 最直接
-            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
-        }
-    }
 
     Column(
         modifier = Modifier

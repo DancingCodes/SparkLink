@@ -2,7 +2,6 @@ package love.moonc.sparklink.ui.screens
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +23,6 @@ class CreateRoomViewModel : ViewModel() {
     var uploadedCoverUrl by mutableStateOf("")
         private set
 
-    var errorMessage by mutableStateOf<String?>(null)
 
     /**
      * 🚀 新增：统一处理图片上传
@@ -32,14 +30,9 @@ class CreateRoomViewModel : ViewModel() {
     fun uploadCover(context: Context, uri: Uri) {
         viewModelScope.launch {
             isUploading = true
-            errorMessage = null
             NetworkModule.repository.uploadImage(context, uri, "cover")
                 .onSuccess { url ->
                     uploadedCoverUrl = url
-                }
-                .onFailure { e ->
-                    errorMessage = "封面上传失败: ${e.message}"
-                    Log.e("API", errorMessage!!)
                 }
             isUploading = false
         }
@@ -54,25 +47,16 @@ class CreateRoomViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             isCreating = true
-            errorMessage = null
 
-            // 使用 repository 创建房间（自动使用已上传的 uploadedCoverUrl）
             NetworkModule.repository.createRoom(CreateRoomRequest(title, uploadedCoverUrl))
                 .onSuccess { room ->
                     val newRoomId = room.id
-                    // 嵌套进入房间逻辑
                     NetworkModule.repository.enterRoom(newRoomId)
                         .onSuccess { enterData ->
                             onSuccess(newRoomId, enterData)
                         }
-                        .onFailure { e ->
-                            errorMessage = "进入房间失败: ${e.message}"
-                        }
-                }
-                .onFailure { e ->
-                    errorMessage = "创建房间失败: ${e.message}"
-                }
 
+                }
             isCreating = false
         }
     }
