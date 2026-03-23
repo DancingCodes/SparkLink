@@ -22,17 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.remote.NetworkModule
+import love.moonc.sparklink.data.remote.uploadImage
 import love.moonc.sparklink.ui.navigation.CreateRoomRoute
 import love.moonc.sparklink.ui.navigation.RoomDetailRoute
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.File
-import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +37,6 @@ fun CreateRoomScreen(navController: NavController) {
 
     var roomName by remember { mutableStateOf("") }
 
-    // --- 图片上传相关状态 ---
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploadedCoverUrl by remember { mutableStateOf("") }
     var isUploading by remember { mutableStateOf(false) }
@@ -56,7 +49,7 @@ fun CreateRoomScreen(navController: NavController) {
             scope.launch {
                 isUploading = true
                 try {
-                    uploadedCoverUrl = uploadImageAction(it, context)
+                    uploadedCoverUrl = NetworkModule.Api.uploadImage(context, uri, "avatar")
                     Toast.makeText(context, "封面上传成功", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Toast.makeText(context, "图片处理失败: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
@@ -153,9 +146,6 @@ fun CreateRoomScreen(navController: NavController) {
                             ) {
                                 popUpTo<CreateRoomRoute> { inclusive = true }
                             }
-                        },
-                        onError = { msg ->
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
                     )
                 },modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -169,28 +159,5 @@ fun CreateRoomScreen(navController: NavController) {
                 }
             }
         }
-    }
-}
-
-/**
- * 复用上传逻辑
- */
-private suspend fun uploadImageAction(
-    uri: Uri,
-    context: android.content.Context
-): String {
-    return withContext(Dispatchers.IO) {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: throw Exception("无法读取图片")
-        val file = File(context.cacheDir, "room_cover_${System.currentTimeMillis()}.jpg")
-
-        FileOutputStream(file).use { output ->
-            inputStream.use { input -> input.copyTo(output) }
-        }
-
-        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-
-        val response = NetworkModule.Api.uploadFile(body)
-        response.data.fileUrl
     }
 }

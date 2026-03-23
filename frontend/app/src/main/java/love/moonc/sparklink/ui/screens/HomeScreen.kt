@@ -101,7 +101,6 @@ fun HomeScreen(navController: NavController) {
                             homeViewModel.enterRoom(
                                 roomId = room.id,
                                 onSuccess = { data ->
-                                    homeViewModel.lastEnterData = data
                                     navController.navigate(
                                         RoomDetailRoute(
                                             roomId = room.id,

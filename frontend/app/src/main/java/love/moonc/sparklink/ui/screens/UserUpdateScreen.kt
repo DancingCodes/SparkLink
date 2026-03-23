@@ -27,17 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
 import love.moonc.sparklink.data.remote.NetworkModule
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.File
-import java.io.FileOutputStream
+import love.moonc.sparklink.data.remote.uploadImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +43,6 @@ fun UserUpdateScreen(navController: NavController) {
     var isUploading by remember { mutableStateOf(false) }
     var showCloseAccountDialog by remember { mutableStateOf(false) }
 
-    // 图片选择器逻辑
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -57,7 +50,7 @@ fun UserUpdateScreen(navController: NavController) {
             scope.launch {
                 isUploading = true
                 try {
-                    val url = uploadImageAction(it, context)
+                    val url = NetworkModule.Api.uploadImage(context, uri, "avatar")
                     viewModel.avatar = url
                     Toast.makeText(context, "头像上传成功", Toast.LENGTH_SHORT).show()
                 } catch (_: Exception) {
@@ -225,18 +218,5 @@ fun UserUpdateScreen(navController: NavController) {
                 }
             )
         }
-    }
-}
-
-// 辅助函数：上传图片
-private suspend fun uploadImageAction(uri: Uri, context: android.content.Context): String {
-    return withContext(Dispatchers.IO) {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: throw Exception()
-        val file = File(context.cacheDir, "update_${System.currentTimeMillis()}.jpg")
-        FileOutputStream(file).use { output -> inputStream.use { it.copyTo(output) } }
-        val body = MultipartBody.Part.createFormData(
-            "file", file.name, file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-        )
-        NetworkModule.Api.uploadFile(body).data.fileUrl
     }
 }

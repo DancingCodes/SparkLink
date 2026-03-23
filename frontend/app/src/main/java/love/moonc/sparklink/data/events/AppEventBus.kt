@@ -14,4 +14,5 @@ object AppEventBus {
 
 sealed class AppEvent {
     object Logout : AppEvent()
+    data class ShowToast(val message: String) : AppEvent()
 }

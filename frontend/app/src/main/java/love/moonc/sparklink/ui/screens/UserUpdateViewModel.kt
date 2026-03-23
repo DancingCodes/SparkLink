@@ -1,5 +1,6 @@
 package love.moonc.sparklink.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,12 +8,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.data.remote.NetworkModule
+import love.moonc.sparklink.data.remote.getOrThrow // 🚀 必带导入
 import love.moonc.sparklink.data.remote.model.request.UserUpdateRequest
 
 class UserUpdateViewModel : ViewModel() {
     private val userPreferences = UserPreferences.getInstance()
 
-    // 状态表单
     var name by mutableStateOf("")
     var sex by mutableStateOf("")
     var avatar by mutableStateOf("")
@@ -21,10 +22,8 @@ class UserUpdateViewModel : ViewModel() {
     var isLoading by mutableStateOf(false)
     var updateSuccess by mutableStateOf(false)
     var isAccountClosed by mutableStateOf(false)
-    var errorMessage by mutableStateOf<String?>(null)
 
     init {
-        // 初始化时加载本地缓存的用户数据
         viewModelScope.launch {
             userPreferences.userData.first()?.let { user ->
                 name = user.name
@@ -34,7 +33,6 @@ class UserUpdateViewModel : ViewModel() {
         }
     }
 
-    // 更新用户信息
     fun updateUserInfo() {
         viewModelScope.launch {
             isLoading = true
@@ -45,41 +43,31 @@ class UserUpdateViewModel : ViewModel() {
                     avatar = avatar,
                     password = password.ifEmpty { null }
                 )
-                val response = NetworkModule.Api.updateUser(request)
 
-                if (response.code == 200) {
-                    // 同步更新本地存储
-                    val currentUser = userPreferences.userData.first()
-                    currentUser?.let {
-                        val newUser = it.copy(name = name, sex = sex, avatar = avatar)
-                        userPreferences.saveUser(newUser)
-                    }
-                    updateSuccess = true
+                NetworkModule.Api.updateUser(request).getOrThrow()
+
+                userPreferences.userData.first()?.let {
+                    val newUser = it.copy(name = name, sex = sex, avatar = avatar)
+                    userPreferences.saveUser(newUser)
                 }
-            } catch (e: Exception) {
-                errorMessage = e.message ?: "更新失败"
-            } finally {
+                updateSuccess = true
+            }  finally {
                 isLoading = false
             }
         }
     }
 
-    // 注销账户
     fun closeAccount() {
         viewModelScope.launch {
             isLoading = true
             try {
-                val response = NetworkModule.Api.closeAccount()
-                if (response.code == 200) {
-                    isAccountClosed = true
-                }
-            } catch (e: Exception) {
-                errorMessage = e.message ?: "注销失败"
+                NetworkModule.Api.closeAccount().getOrThrow()
+                isAccountClosed = true
+            }  catch (e: Exception) {
+                Log.e("API", "请求失败: ${e.message}")
             } finally {
                 isLoading = false
             }
         }
     }
-
-    fun clearError() { errorMessage = null }
 }

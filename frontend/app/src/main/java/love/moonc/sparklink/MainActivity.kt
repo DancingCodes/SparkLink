@@ -1,6 +1,7 @@
 package love.moonc.sparklink
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,29 +9,46 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
-import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
 import love.moonc.sparklink.data.local.UserPreferences
 import love.moonc.sparklink.ui.navigation.*
 import love.moonc.sparklink.ui.screens.*
 import love.moonc.sparklink.ui.theme.SparklinkTheme
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.toRoute
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            AppEventBus.events.collect { event ->
+                when (event) {
+                    is AppEvent.ShowToast -> {
+                        Toast.makeText(this@MainActivity, event.message, Toast.LENGTH_SHORT).show()
+                    }
+                    is AppEvent.Logout -> {
+                        UserPreferences.getInstance().clear()
+                    }
+                }
+            }
+        }
+
         setContent {
             SparklinkTheme {
-                val userPrefs = UserPreferences.getInstance()
                 var isLoggedIn by remember { mutableStateOf<Boolean?>(null) }
+
                 LaunchedEffect(Unit) {
-                    isLoggedIn = !userPrefs.token.first().isNullOrBlank()
+                    isLoggedIn = !UserPreferences.getInstance().token.first().isNullOrBlank()
                 }
+
                 when (isLoggedIn) {
                     null -> SplashScreen()
                     else -> MainContent(isLoggedIn = isLoggedIn!!)
@@ -43,13 +61,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContent(isLoggedIn: Boolean) {
     val navController = rememberNavController()
-    val userPrefs = UserPreferences.getInstance()
 
-    // 登录/登出事件监听
     LaunchedEffect(Unit) {
         AppEventBus.events.collect { event ->
             if (event is AppEvent.Logout) {
-                userPrefs.clear()
                 navController.navigate(LoginRoute) {
                     popUpTo(0) { inclusive = true }
                 }
@@ -60,7 +75,6 @@ fun MainContent(isLoggedIn: Boolean) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // ✅ 判断是否显示底部导航栏：判断当前目的地是否在 Tab 列表里
     val showBottomBar = currentDestination?.let { dest ->
         dest.hasRoute<HomeRoute>() || dest.hasRoute<MessagesRoute>() || dest.hasRoute<ProfileRoute>()
     } ?: false
@@ -95,11 +109,9 @@ fun MainContent(isLoggedIn: Boolean) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            // ✅ 起始页面改为 Route 对象
             startDestination = if (isLoggedIn) HomeRoute else LoginRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
-            // 所有路由注册全部改为类型安全模式
             composable<LoginRoute> { LoginScreen(navController) }
             composable<RegisterRoute> { RegisterScreen(navController) }
             composable<HomeRoute> { HomeScreen(navController) }
@@ -108,7 +120,7 @@ fun MainContent(isLoggedIn: Boolean) {
             composable<UserUpdateRoute> { UserUpdateScreen(navController) }
             composable<CreateRoomRoute> { CreateRoomScreen(navController) }
 
-            // 核心：房间详情页
+            // 房间详情
             composable<RoomDetailRoute> { backStackEntry ->
                 val args = backStackEntry.toRoute<RoomDetailRoute>()
                 RoomDetailScreen(
@@ -125,5 +137,6 @@ fun MainContent(isLoggedIn: Boolean) {
 
 @Composable
 fun SplashScreen() {
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    }
 }

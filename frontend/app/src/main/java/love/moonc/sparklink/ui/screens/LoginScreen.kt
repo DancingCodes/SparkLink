@@ -107,9 +107,6 @@ fun LoginScreen(navController: NavController) {
                                 inclusive = true
                             }
                         }
-                    },
-                    onError = { msg ->
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
                 )
             },

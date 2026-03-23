@@ -44,13 +44,12 @@ func RoomWS(c *gin.Context) {
 	uidInt, _ := strconv.Atoi(uidStr)
 	uid := uint(uidInt)
 
-	// 1. 协议升级
+	// 将普通的 HTTP 请求升级为 WebSocket 长连接
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		return
 	}
 
-	// 2. 退出清理逻辑 (Deferred)
 	defer func() {
 		// A. 断开连接
 		err := conn.Close()

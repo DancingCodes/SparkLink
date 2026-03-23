@@ -27,3 +27,11 @@ func Error(c *gin.Context, msg string) {
 		Data: nil,
 	})
 }
+
+func Unauthorized(c *gin.Context, msg string) {
+	c.JSON(http.StatusOK, Response{
+		Code: 401,
+		Msg:  msg,
+		Data: nil,
+	})
+}

@@ -1,5 +1,6 @@
 package love.moonc.sparklink.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.exception.ApiException
+import love.moonc.sparklink.data.remote.getOrThrow
 import love.moonc.sparklink.data.remote.model.entity.Room
 import love.moonc.sparklink.data.remote.model.request.LeaveRoomRequest
 import love.moonc.sparklink.data.remote.model.response.EnterRoomResponse
@@ -20,23 +21,17 @@ class HomeViewModel : ViewModel() {
     var isRefreshing by mutableStateOf(false)
         private set
 
-    var lastEnterData by mutableStateOf<EnterRoomResponse?>(null)
-
     init {
         fetchRoomList()
     }
 
-    fun fetchRoomList(onError: (String) -> Unit = {}) {
+    fun fetchRoomList() {
         viewModelScope.launch {
             isRefreshing = true
             try {
-                val response = NetworkModule.Api.getRoomList()
-                android.util.Log.d("API_DEBUG", "Rooms Data: ${response.data}")
-                rooms = response.data
-            } catch (e: ApiException) {
-                onError(e.message)
+                rooms = NetworkModule.Api.getRoomList().getOrThrow()
             } catch (e: Exception) {
-                onError("无法连接到服务器: ${e.localizedMessage}")
+                Log.e("API", "请求失败: ${e.message}")
             } finally {
                 isRefreshing = false
             }
@@ -45,17 +40,14 @@ class HomeViewModel : ViewModel() {
 
     fun enterRoom(
         roomId: Long,
-        onSuccess: (EnterRoomResponse) -> Unit,
-        onError: (String) -> Unit = {}
+        onSuccess: (EnterRoomResponse) -> Unit
     ) {
         viewModelScope.launch {
             try {
-                val response = NetworkModule.Api.enterRoom(LeaveRoomRequest(roomId))
-                onSuccess(response.data)
-            } catch (e: ApiException) {
-                onError(e.message)
+                val enterData = NetworkModule.Api.enterRoom(LeaveRoomRequest(roomId)).getOrThrow()
+                onSuccess(enterData)
             } catch (e: Exception) {
-                onError("进入房间失败: ${e.localizedMessage}")
+                Log.e("API", "请求失败: ${e.message}")
             }
         }
     }

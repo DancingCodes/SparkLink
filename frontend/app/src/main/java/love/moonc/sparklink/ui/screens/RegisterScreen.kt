@@ -24,18 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.exception.ApiException
 import love.moonc.sparklink.data.remote.model.request.RegisterRequest
-import love.moonc.sparklink.ui.screens.RegisterViewModel
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.File
-import java.io.FileOutputStream
+import love.moonc.sparklink.data.remote.uploadImage
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -60,8 +53,7 @@ fun RegisterScreen(navController: NavController) {
             scope.launch {
                 isUploading = true
                 try {
-                    // 异步上传头像
-                    uploadedAvatarUrl = uploadImageAction(it, context)
+                    uploadedAvatarUrl = NetworkModule.Api.uploadImage(context, uri, "avatar")
                     Toast.makeText(context, "头像上传成功", Toast.LENGTH_SHORT).show()
                 } catch (e: ApiException) {
                     Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
@@ -196,9 +188,6 @@ fun RegisterScreen(navController: NavController) {
                     onSuccess = {
                         Toast.makeText(context, "注册成功，欢迎加入！", Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
-                    },
-                    onError = { msg ->
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
                 )
             },
@@ -222,28 +211,5 @@ fun RegisterScreen(navController: NavController) {
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-    }
-}
-
-private suspend fun uploadImageAction(
-    uri: Uri,
-    context: android.content.Context
-): String {
-    return withContext(Dispatchers.IO) {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: throw Exception("无法读取图片")
-        // 建议增加一个后缀名判断逻辑，或者固定存为 jpg
-        val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
-
-        FileOutputStream(file).use { output ->
-            inputStream.use { input -> input.copyTo(output) }
-        }
-
-        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-
-        // 调用 NetworkModule 接口
-        val response = NetworkModule.Api.uploadFile(body)
-        android.util.Log.d("API_UPLOAD", "Full Response: $response")
-        response.data.fileUrl
     }
 }

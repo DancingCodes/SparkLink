@@ -1,5 +1,7 @@
 package love.moonc.sparklink.data.remote
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import love.moonc.sparklink.data.remote.model.entity.Room
 import love.moonc.sparklink.data.remote.model.request.CreateRoomRequest
 import love.moonc.sparklink.data.remote.model.request.DissolveRoomRequest
@@ -11,13 +13,16 @@ import love.moonc.sparklink.data.remote.model.request.UserUpdateRequest
 import love.moonc.sparklink.data.remote.model.response.EnterRoomResponse
 import love.moonc.sparklink.data.remote.model.response.RoomDetailResponse
 import love.moonc.sparklink.data.remote.model.response.UploadResponse
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import java.io.File
 
 interface ApiService {
     @Multipart
@@ -59,4 +64,31 @@ interface ApiService {
 
     @POST("user/close")
     suspend fun closeAccount(): BaseResponse<String>
+}
+
+suspend fun ApiService.uploadImage(
+    context: android.content.Context,
+    uri: android.net.Uri,
+    prefix: String = "upload"
+): String = withContext(Dispatchers.IO) {
+    val inputStream = context.contentResolver.openInputStream(uri)
+        ?: throw Exception("无法读取图片文件")
+
+    val fileName = "${prefix}_${System.currentTimeMillis()}.jpg"
+    val file = File(context.cacheDir, fileName)
+
+    try {
+        file.outputStream().use { output ->
+            inputStream.use { input -> input.copyTo(output) }
+        }
+
+        val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
+
+        val response = this@uploadImage.uploadFile(body).getOrThrow()
+
+        response.fileUrl
+    } finally {
+        if (file.exists()) file.delete()
+    }
 }
