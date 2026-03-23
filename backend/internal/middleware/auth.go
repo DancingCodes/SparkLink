@@ -13,6 +13,7 @@ func JWTAuth() gin.HandlerFunc {
 			"/user/register",
 			"/user/login",
 			"/common/upload",
+			"/ws/room",
 		}
 
 		currentPath := c.Request.URL.Path

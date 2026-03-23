@@ -32,6 +32,7 @@ func SetupRouter() *gin.Engine {
 		room.POST("/dissolve", controller.DissolveRoom) // 解散
 		room.POST("/enter", controller.EnterRoom)       // 进入
 		room.GET("/info/:id", controller.GetRoomInfo)   // 详情
+		room.POST("/leave", controller.QuitRoom)        // 离开
 	}
 
 	ws := r.Group("/ws")
