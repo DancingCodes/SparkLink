@@ -20,50 +20,37 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
-import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.exception.ApiException
-import love.moonc.sparklink.data.remote.model.request.RegisterRequest
-import love.moonc.sparklink.data.remote.uploadImage
 
 @Composable
 fun RegisterScreen(navController: NavController) {
     val regViewModel: RegisterViewModel = viewModel()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var nickname by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("男") }
-
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var uploadedAvatarUrl by remember { mutableStateOf("") }
-    var isUploading by remember { mutableStateOf(false) }
+
+    // ✅ 错误提示监听
+    LaunchedEffect(regViewModel.errorMessage) {
+        regViewModel.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
-            scope.launch {
-                isUploading = true
-                try {
-                    uploadedAvatarUrl = NetworkModule.Api.uploadImage(context, uri, "avatar")
-                    Toast.makeText(context, "头像上传成功", Toast.LENGTH_SHORT).show()
-                } catch (e: ApiException) {
-                    Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Toast.makeText(context, "图片处理失败", Toast.LENGTH_SHORT).show()
-                } finally {
-                    isUploading = false
-                }
-            }
+            // ✅ 交给 ViewModel 处理上传
+            regViewModel.uploadAvatar(context, it)
         }
     }
 
@@ -83,7 +70,7 @@ fun RegisterScreen(navController: NavController) {
                 .size(100.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clickable(enabled = !isUploading && !regViewModel.isRegistering) {
+                .clickable(enabled = !regViewModel.isUploading && !regViewModel.isRegistering) {
                     launcher.launch("image/*")
                 },
             contentAlignment = Alignment.Center
@@ -99,8 +86,7 @@ fun RegisterScreen(navController: NavController) {
                 Icon(Icons.Default.CameraAlt, contentDescription = "Add Photo", tint = Color.Gray)
             }
 
-            if (isUploading) {
-                // 上传时的进度条覆盖层
+            if (regViewModel.isUploading) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
@@ -124,7 +110,7 @@ fun RegisterScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- 性别选择器 ---
+        // 性别选择
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -150,7 +136,7 @@ fun RegisterScreen(navController: NavController) {
 
         OutlinedTextField(
             value = phone,
-            onValueChange = { phone = it },
+            onValueChange = { if(it.length <= 11) phone = it },
             label = { Text("手机号") },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -168,7 +154,7 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             enabled = !regViewModel.isRegistering,
-            // 优化：指定为密码键盘类型
+            visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             singleLine = true
         )
@@ -178,20 +164,18 @@ fun RegisterScreen(navController: NavController) {
         Button(
             onClick = {
                 regViewModel.register(
-                    request = RegisterRequest(
-                        phone = phone,
-                        password = password,
-                        name = nickname,
-                        sex = gender,
-                        avatar = uploadedAvatarUrl
-                    ),
+                    phone = phone,
+                    pass = password,
+                    name = nickname,
+                    sex = gender,
                     onSuccess = {
                         Toast.makeText(context, "注册成功，欢迎加入！", Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
                     }
                 )
             },
-            enabled = !isUploading && !regViewModel.isRegistering &&
+            // 校验逻辑：非上传中、非注册中、手机号11位、密码和昵称不为空
+            enabled = !regViewModel.isUploading && !regViewModel.isRegistering &&
                     phone.length == 11 && password.isNotBlank() && nickname.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = RoundedCornerShape(28.dp)

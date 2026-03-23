@@ -1,7 +1,6 @@
 package love.moonc.sparklink.ui.screens
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -22,9 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
-import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.uploadImage
 import love.moonc.sparklink.ui.navigation.CreateRoomRoute
 import love.moonc.sparklink.ui.navigation.RoomDetailRoute
 
@@ -32,31 +28,18 @@ import love.moonc.sparklink.ui.navigation.RoomDetailRoute
 @Composable
 fun CreateRoomScreen(navController: NavController) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val viewModel: CreateRoomViewModel = viewModel()
 
     var roomName by remember { mutableStateOf("") }
-
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-    var uploadedCoverUrl by remember { mutableStateOf("") }
-    var isUploading by remember { mutableStateOf(false) }
 
+    // 图片选择器逻辑：选完直接丢给 ViewModel
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
             selectedImageUri = it
-            scope.launch {
-                isUploading = true
-                try {
-                    uploadedCoverUrl = NetworkModule.Api.uploadImage(context, uri, "avatar")
-                    Toast.makeText(context, "封面上传成功", Toast.LENGTH_SHORT).show()
-                } catch (e: Exception) {
-                    Toast.makeText(context, "图片处理失败: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-                } finally {
-                    isUploading = false
-                }
-            }
+            viewModel.uploadCover(context, it)
         }
     }
 
@@ -84,7 +67,7 @@ fun CreateRoomScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clickable(enabled = !isUploading && !viewModel.isCreating) {
+                    .clickable(enabled = !viewModel.isUploading && !viewModel.isCreating) {
                         launcher.launch("image/*")
                     },
                 shape = RoundedCornerShape(16.dp),
@@ -106,7 +89,8 @@ fun CreateRoomScreen(navController: NavController) {
                         }
                     }
 
-                    if (isUploading) {
+                    // 加载遮罩
+                    if (viewModel.isUploading) {
                         Box(
                             modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)),
                             contentAlignment = Alignment.Center
@@ -128,13 +112,17 @@ fun CreateRoomScreen(navController: NavController) {
                 singleLine = true
             )
 
+            // 错误提示（如果有）
+            viewModel.errorMessage?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = {
                     viewModel.createAndEnterRoom(
                         title = roomName,
-                        cover = uploadedCoverUrl,
                         onSuccess = { roomId, enterData ->
                             navController.navigate(
                                 RoomDetailRoute(
@@ -148,9 +136,11 @@ fun CreateRoomScreen(navController: NavController) {
                             }
                         }
                     )
-                },modifier = Modifier.fillMaxWidth().height(50.dp),
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(25.dp),
-                enabled = roomName.isNotBlank() && !viewModel.isCreating && !isUploading
+                // 确保没有正在上传或创建
+                enabled = roomName.isNotBlank() && !viewModel.isCreating && !viewModel.isUploading
             ) {
                 if (viewModel.isCreating) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)

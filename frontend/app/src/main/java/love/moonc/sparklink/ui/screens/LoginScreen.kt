@@ -27,13 +27,19 @@ import love.moonc.sparklink.ui.navigation.RegisterRoute
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = LocalContext.current
+    val loginViewModel: LoginViewModel = viewModel()
+
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-
-    val loginViewModel: LoginViewModel = viewModel()
+    // ✅ 错误提示监听：当 ViewModel 抛出错误时，UI 弹出 Toast
+    LaunchedEffect(loginViewModel.errorMessage) {
+        loginViewModel.errorMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -60,9 +66,10 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(60.dp))
 
+        // 手机号输入框
         OutlinedTextField(
             value = phone,
-            onValueChange = { phone = it },
+            onValueChange = { if (it.length <= 11) phone = it }, // 限制 11 位
             label = { Text("手机号") },
             placeholder = { Text("请输入手机号") },
             modifier = Modifier.fillMaxWidth(),
@@ -74,6 +81,7 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 密码输入框
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -95,6 +103,7 @@ fun LoginScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(40.dp))
 
+        // 登录按钮
         Button(
             onClick = {
                 loginViewModel.login(
@@ -103,9 +112,8 @@ fun LoginScreen(navController: NavController) {
                     onSuccess = {
                         Toast.makeText(context, "欢迎回来！", Toast.LENGTH_SHORT).show()
                         navController.navigate(HomeRoute) {
-                            popUpTo<LoginRoute> {
-                                inclusive = true
-                            }
+                            // ✅ 登录成功后清理栈，防止返回到登录页
+                            popUpTo(LoginRoute) { inclusive = true }
                         }
                     }
                 )
@@ -114,7 +122,7 @@ fun LoginScreen(navController: NavController) {
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            // 按钮禁用逻辑：正在登录中，或者手机号位数不对（简单校验）
+            // 按钮校验逻辑
             enabled = !loginViewModel.isLoggingIn && phone.length == 11 && password.isNotBlank()
         ) {
             if (loginViewModel.isLoggingIn) {

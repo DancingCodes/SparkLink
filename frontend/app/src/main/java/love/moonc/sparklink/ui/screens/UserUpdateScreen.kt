@@ -1,16 +1,12 @@
 package love.moonc.sparklink.ui.screens
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
@@ -27,42 +23,29 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch
 import love.moonc.sparklink.data.events.AppEvent
 import love.moonc.sparklink.data.events.AppEventBus
-import love.moonc.sparklink.data.remote.NetworkModule
-import love.moonc.sparklink.data.remote.uploadImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserUpdateScreen(navController: NavController) {
     val viewModel: UserUpdateViewModel = viewModel()
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
-    var isUploading by remember { mutableStateOf(false) }
     var showCloseAccountDialog by remember { mutableStateOf(false) }
 
+    // 图片选择器
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            scope.launch {
-                isUploading = true
-                try {
-                    val url = NetworkModule.Api.uploadImage(context, uri, "avatar")
-                    viewModel.avatar = url
-                    Toast.makeText(context, "头像上传成功", Toast.LENGTH_SHORT).show()
-                } catch (_: Exception) {
-                    Toast.makeText(context, "上传失败", Toast.LENGTH_SHORT).show()
-                } finally {
-                    isUploading = false
-                }
-            }
-        }
+    ) { uri ->
+        uri?.let { viewModel.uploadAvatar(context, it) }
     }
 
-    // 状态监听：资料更新成功
+    // ✅ 统一错误与成功监听
+    LaunchedEffect(viewModel.errorMessage) {
+        viewModel.errorMessage?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
+    }
+
     LaunchedEffect(viewModel.updateSuccess) {
         if (viewModel.updateSuccess) {
             Toast.makeText(context, "资料已更新", Toast.LENGTH_SHORT).show()
@@ -70,11 +53,10 @@ fun UserUpdateScreen(navController: NavController) {
         }
     }
 
-    // 状态监听：注销成功
     LaunchedEffect(viewModel.isAccountClosed) {
         if (viewModel.isAccountClosed) {
             Toast.makeText(context, "账号已注销", Toast.LENGTH_LONG).show()
-            AppEventBus.emit(AppEvent.Logout) // 触发 MainActivity 的登出清理逻辑
+            AppEventBus.emit(AppEvent.Logout)
         }
     }
 
@@ -106,7 +88,7 @@ fun UserUpdateScreen(navController: NavController) {
                     .size(100.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .clickable(enabled = !isUploading) { launcher.launch("image/*") },
+                    .clickable(enabled = !viewModel.isUploading) { launcher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
                 if (viewModel.avatar.isNotEmpty()) {
@@ -120,7 +102,7 @@ fun UserUpdateScreen(navController: NavController) {
                     Icon(Icons.Default.CameraAlt, null, tint = Color.Gray)
                 }
 
-                if (isUploading) {
+                if (viewModel.isUploading) {
                     Box(
                         modifier = Modifier.fillMaxSize().background(Color.Black.copy(0.3f)),
                         contentAlignment = Alignment.Center
@@ -130,33 +112,42 @@ fun UserUpdateScreen(navController: NavController) {
                 }
             }
 
-            TextButton(onClick = { launcher.launch("image/*") }) {
+            TextButton(onClick = { launcher.launch("image/*") }, enabled = !viewModel.isUploading) {
                 Text("更换头像")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 输入表单
             OutlinedTextField(
                 value = viewModel.name,
                 onValueChange = { viewModel.name = it },
                 label = { Text("昵称") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                enabled = !viewModel.isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 性别选择
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(start = 4.dp)
             ) {
                 Text("性别：", style = MaterialTheme.typography.bodyLarge)
-                RadioButton(selected = viewModel.sex == "男", onClick = { viewModel.sex = "男" })
+                RadioButton(
+                    selected = viewModel.sex == "男",
+                    onClick = { viewModel.sex = "男" },
+                    enabled = !viewModel.isLoading
+                )
                 Text("男")
                 Spacer(modifier = Modifier.width(16.dp))
-                RadioButton(selected = viewModel.sex == "女", onClick = { viewModel.sex = "女" })
+                RadioButton(
+                    selected = viewModel.sex == "女",
+                    onClick = { viewModel.sex = "女" },
+                    enabled = !viewModel.isLoading
+                )
                 Text("女")
             }
 
@@ -168,16 +159,16 @@ fun UserUpdateScreen(navController: NavController) {
                 label = { Text("新密码 (留空表示不修改)") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                singleLine = true,
+                enabled = !viewModel.isLoading
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 保存按钮
             Button(
                 onClick = { viewModel.updateUserInfo() },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                enabled = !viewModel.isLoading && !isUploading,
+                enabled = !viewModel.isLoading && !viewModel.isUploading && viewModel.name.isNotBlank(),
                 shape = RoundedCornerShape(28.dp)
             ) {
                 if (viewModel.isLoading) {
@@ -187,11 +178,10 @@ fun UserUpdateScreen(navController: NavController) {
                 }
             }
 
-            // 注销按钮
-            Spacer(modifier = Modifier.height(16.dp))
             TextButton(
                 onClick = { showCloseAccountDialog = true },
-                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                enabled = !viewModel.isLoading
             ) {
                 Text("注销账号")
             }
@@ -199,7 +189,6 @@ fun UserUpdateScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
         }
 
-        // 注销二次确认弹窗
         if (showCloseAccountDialog) {
             AlertDialog(
                 onDismissRequest = { showCloseAccountDialog = false },
