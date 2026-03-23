@@ -15,7 +15,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 object NetworkModule {
-    private const val BASE_URL = "http://192.168.110.144:10004/"
+//    private const val BASE_URL = "http://192.168.110.144:10004/"
+    private const val BASE_URL = "https://sparklink.moonc.love/"
 
     fun getWsUrl(path: String): String {
         val wsBase = if (BASE_URL.startsWith("https")) {
