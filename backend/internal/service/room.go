@@ -49,7 +49,6 @@ func DissolveRoom(roomID uint, userID uint) error {
 		}
 
 		// 2. 软删除房间内的所有成员关系
-		// GORM 发现模型里有 DeletedAt 字段，会自动执行 UPDATE 语句而非 DELETE
 		if err := tx.Where("room_id = ?", roomID).Delete(&model.RoomUser{}).Error; err != nil {
 			return err
 		}

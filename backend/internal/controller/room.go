@@ -73,6 +73,12 @@ func EnterRoom(c *gin.Context) {
 
 	uid := c.MustGet("user_id").(uint)
 
+	room, _, err := service.GetRoomDetail(req.RoomID)
+	if err != nil || room == nil {
+		utils.Error(c, "房间已解散或不存在")
+		return
+	}
+
 	if err := service.JoinRoom(req.RoomID, uid); err != nil {
 		utils.Error(c, "进入房间失败")
 		return

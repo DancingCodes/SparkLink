@@ -6,5 +6,4 @@ import kotlinx.serialization.Serializable
 data class RoomWsEvent(
     val type: String,
     val uid: Int,
-    val msg: String? = null
 )

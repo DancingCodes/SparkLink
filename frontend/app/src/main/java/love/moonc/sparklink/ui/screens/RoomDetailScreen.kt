@@ -53,6 +53,12 @@ fun RoomDetailScreen(
         permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
+    LaunchedEffect(viewModel.isRoomDissolved) {
+        if (viewModel.isRoomDissolved) {
+            navController.popBackStack()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(

@@ -1,6 +1,5 @@
 package love.moonc.sparklink.ui.screens
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -41,7 +40,6 @@ class HomeViewModel : ViewModel() {
         onSuccess: (EnterRoomResponse) -> Unit
     ) {
         viewModelScope.launch {
-            // ✅ 使用 repository 进入房间
             NetworkModule.repository.enterRoom(roomId)
                 .onSuccess { enterData ->
                     onSuccess(enterData)

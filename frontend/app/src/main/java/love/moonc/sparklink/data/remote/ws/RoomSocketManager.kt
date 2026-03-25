@@ -1,6 +1,5 @@
 package love.moonc.sparklink.data.remote.ws
 
-import android.util.Log
 import kotlinx.serialization.json.Json
 import love.moonc.sparklink.data.remote.NetworkModule
 import love.moonc.sparklink.data.remote.model.ws.RoomWsEvent
@@ -17,26 +16,9 @@ class RoomSocketManager(private val client: OkHttpClient) {
         val request = Request.Builder().url(url).build()
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                Log.d("RoomSocket", "WebSocket Connected")
-            }
-
             override fun onMessage(webSocket: WebSocket, text: String) {
-                Log.d("RoomSocket", "Receive: $text")
-                try {
-                    val event = json.decodeFromString<RoomWsEvent>(text)
-                    onEvent(event)
-                } catch (e: Exception) {
-                    Log.e("RoomSocket", "Decode Error: ${e.message}")
-                }
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                Log.e("RoomSocket", "Connect Failure: ${t.message}")
-            }
-
-            override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                Log.d("RoomSocket", "Closing: $reason")
+                val event = json.decodeFromString<RoomWsEvent>(text)
+                onEvent(event)
             }
         })
     }

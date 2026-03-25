@@ -15,6 +15,8 @@ class RoomDetailViewModel : ViewModel() {
     private val userPrefs = UserPreferences.getInstance()
 
     // 房间数据状态
+    var isRoomDissolved by mutableStateOf(false)
+        private set
     var roomDetail by mutableStateOf<RoomDetailResponse?>(null)
     val occupants = mutableStateListOf<RoomUser>()
 
@@ -32,10 +34,17 @@ class RoomDetailViewModel : ViewModel() {
                 val user = userPrefs.userData.first()
                 val uid = user?.id?.toInt() ?: 0
 
-                NetworkModule.roomSocketManager.connect(roomId.toString(), uid) { _ ->
-                    // 收到加入或离开信号，刷新成员列表
-                    viewModelScope.launch {
-                        refreshMembers(roomId)
+                NetworkModule.roomSocketManager.connect(roomId.toString(), uid) { event ->
+                    when (event.type) {
+                        "dissolve" -> {
+                            cleanup()
+                            isRoomDissolved = true
+                        }
+                        "join", "leave" -> {
+                            viewModelScope.launch {
+                                refreshMembers(roomId)
+                            }
+                        }
                     }
                 }
             }
@@ -49,9 +58,6 @@ class RoomDetailViewModel : ViewModel() {
         }
     }
 
-    /**
-     * 退出房间清理：根据身份发送请求 + 断开所有连接
-     */
     fun exitRoom(roomId: Long, onComplete: () -> Unit) {
         viewModelScope.launch {
             val currentUserId = userPrefs.userData.first()?.id
@@ -72,10 +78,5 @@ class RoomDetailViewModel : ViewModel() {
     private fun cleanup() {
         AgoraManager.leaveChannel()
         NetworkModule.roomSocketManager.disconnect()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        cleanup()
     }
 }
